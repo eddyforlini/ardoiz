@@ -26,6 +26,8 @@ type Base = {
   id: string;
   /** Explication courte montrée après une erreur */
   explain?: string;
+  /** Enregistrement du parent lisant le mot (adresse d'un fichier sur le téléphone), à la place de la voix de synthèse */
+  audio?: string;
 };
 
 /** Question à choix : comparer, bonne orthographe, vrai ou faux, chasse aux rimes */

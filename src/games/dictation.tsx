@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { DictationExercise } from '@/content/types';
-import { speak } from '@/content/speech';
+import { sayWord, speak } from '@/content/speech';
 import { Body, Button } from '@/components/ui';
 import { useUnivers } from '@/univers/UniversProvider';
 import { Prompt, type GameProps } from './shared';
@@ -20,15 +20,17 @@ export function DictationGame({ exercise, onAnswer, done }: GameProps<DictationE
   const sentence = exercise.sentence ? `${exercise.word}. ${exercise.sentence}` : exercise.word;
 
   useEffect(() => {
-    speak(sentence);
-  }, [sentence]);
+    // La voix du parent dit le mot seul ; la phrase d'exemple reste en synthèse
+    if (exercise.audio) sayWord(exercise.word, exercise.audio);
+    else speak(sentence);
+  }, [sentence, exercise.word, exercise.audio]);
 
   const correct = normalize(value) === normalize(exercise.word);
 
   return (
     <View style={styles.wrap}>
       <Prompt text="Écris le mot que tu entends" speakText={sentence} />
-      <Pressable accessibilityRole="button" accessibilityLabel="Réécouter le mot" onPress={() => speak(exercise.word)} style={[styles.replay, { backgroundColor: c.primaryTint }]}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Réécouter le mot" onPress={() => sayWord(exercise.word, exercise.audio)} style={[styles.replay, { backgroundColor: c.primaryTint }]}>
         <Text style={{ fontSize: 28 }}>🔊</Text>
         <Body bold style={{ color: c.primary }}>Réécouter</Body>
       </Pressable>

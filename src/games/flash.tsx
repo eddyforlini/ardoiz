@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { FlashExercise } from '@/content/types';
-import { speak } from '@/content/speech';
+import { sayWord } from '@/content/speech';
 import { Body } from '@/components/ui';
 import { useUnivers } from '@/univers/UniversProvider';
 import { Prompt, Tile, shuffle, type GameProps } from './shared';
@@ -18,10 +18,10 @@ export function FlashGame({ exercise, onAnswer, done }: GameProps<FlashExercise>
   const options = useMemo(() => shuffle([exercise.word, ...exercise.distractors]), [exercise]);
 
   useEffect(() => {
-    speak(exercise.word);
+    sayWord(exercise.word, exercise.audio);
     const t = setTimeout(() => setPhase('pick'), SHOW_MS);
     return () => clearTimeout(t);
-  }, [exercise.word]);
+  }, [exercise.word, exercise.audio]);
 
   if (phase === 'show') {
     return (
