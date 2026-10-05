@@ -9,7 +9,8 @@ Une étape = une branche et une PR, essayée sur téléphone avec Expo Go avant 
 | 2b. Autres jeux | Écran de découverte de la leçon, 7 jeux de plus (vrai ou faux, tri, touche le mot, phrase en vrac, dictée, dénombrer, memory), leçons grammaire et tables | En cours (PR 3) |
 | 3. Photo vers mission | Supabase, Edge Function qui appelle Claude, validation parent | À faire |
 | 4. Voix | Réciter, épeler, lire à voix haute, Ardoiz qui parle | À faire |
-| 5. Motivation | Récompenses, monde, Codex, Corrige Gribouille, Mes pièges, mode dys | À faire |
+| 5. Motivation | Progrès enregistrés, révision espacée, série, quêtes du jour, coffres et autocollants, monde à construire, Gribouille qui évolue | En cours (PR 4) |
+| 5b. Motivation, suite | Codex des notions, Corrige Gribouille, Mes pièges, mode dys, animations de fête | À faire |
 | 6. Parent et bêta | Espace parent, rapport hebdo, TestFlight et Play interne | À faire |
 
 Ensuite : autres niveaux, autres matières, classe partagée, mode sans écran, histoire du soir, appel de Gribouille, ardoise réelle.
