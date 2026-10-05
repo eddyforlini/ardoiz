@@ -16,6 +16,7 @@ Une étape = une branche et une PR, essayée sur téléphone avec Expo Go avant 
 | 3g. Banque CE1 | 34 leçons, 323 exercices, un fichier par matière (`bank-ce1-maths.ts`, `bank-ce1-francais.ts`), les 27 attendus couverts, script `scripts/check-bank.mts` | En cours (PR 12) |
 | 3h. Photo et texte sans IA | Lecture du texte sur le téléphone (ML Kit, dev build), reconnaissance par règles (calculs, poésie, mots, leçon de la banque), onglet « Texte de la leçon » dans l'ajout, Claude en dernier recours | En cours (PR 13) |
 | 3i. Banque CP | 28 leçons, 254 exercices, 22 attendus de fin de CP couverts (`bank-cp-maths.ts`, `bank-cp-francais.ts`) | En cours (PR 14) |
+| 3j. Banque CE2 | 33 leçons, 320 exercices, 27 attendus de fin de CE2 couverts (`bank-ce2-maths.ts`, `bank-ce2-francais.ts`) | En cours (PR 15) |
 | 3b. Comptes | Compte parent Supabase, plusieurs enfants, progrès synchronisés | À faire |
 | 4. Voix | Réciter, épeler, lire à voix haute, Ardoiz qui parle | À faire |
 | 5. Motivation | Progrès enregistrés, révision espacée, série, quêtes du jour, coffres et autocollants, monde à construire, Gribouille qui évolue | En cours (PR 4) |
