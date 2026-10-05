@@ -8,6 +8,8 @@ import { Gribouille } from '@/components/gribouille';
 import { ParentGate } from '@/components/parent-gate';
 import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
 import { analysePhoto, serverReady, type AnalyseResult } from '@/content/api';
+import { ocrAvailable, readText } from '@/content/ocr';
+import { analyseText } from '@/content/recognize';
 import { useLessons } from '@/content/LessonsProvider';
 import { SOURCE_LABEL, SUBJECT_LABEL } from '@/content/types';
 import { GAME_LABEL } from '@/games';
@@ -17,7 +19,7 @@ import { useUnivers } from '@/univers/UniversProvider';
 type State =
   | { step: 'idle' }
   | { step: 'analysing'; uri: string }
-  | { step: 'preview'; uri: string; result: AnalyseResult }
+  | { step: 'preview'; uri: string; result: Result }
   | { step: 'error'; uri: string | null; message: string };
 
 /** Réduit la photo (1280 px de large, JPEG) : assez pour lire une page, léger à envoyer */
@@ -28,10 +30,16 @@ async function shrink(uri: string): Promise<{ base64: string; uri: string }> {
   return { base64: out.base64, uri: out.uri };
 }
 
+type Result = AnalyseResult & { fromBank?: boolean };
+
+const canRead = ocrAvailable || serverReady;
+
 /**
- * Photo de la leçon : le parent prend la page en photo, Claude (côté serveur)
- * en fait une leçon neutre, le parent vérifie et valide. La photo n'est ni
- * enregistrée sur le téléphone ni gardée sur le serveur.
+ * Photo de la leçon : le texte est lu sur le téléphone (ML Kit, hors ligne),
+ * puis reconnu par règles : calculs, poésie, liste de mots, ou leçon déjà
+ * dans la banque. Claude côté serveur n'intervient qu'en dernier recours,
+ * si le serveur est branché. La photo n'est ni enregistrée ni envoyée
+ * quand la lecture se fait sur place.
  */
 export default function PhotoScreen() {
   const { univers } = useUnivers();
@@ -46,6 +54,17 @@ export default function PhotoScreen() {
       if (picked.canceled || !picked.assets[0]) return;
       const { base64, uri } = await shrink(picked.assets[0].uri);
       setState({ step: 'analysing', uri });
+      if (ocrAvailable) {
+        const text = await readText(uri);
+        const r = analyseText(text, level);
+        if (r.kind !== 'unknown') {
+          setState({ step: 'preview', uri, result: { lesson: r.lesson, warning: r.why, dropped: 0, fromBank: r.kind === 'bank' } });
+          return;
+        }
+        if (!serverReady) {
+          throw new Error(`${r.why} Recopie le texte dans « Taper les mots ou la poésie », onglet « Texte de la leçon ».`);
+        }
+      }
       const result = await analysePhoto(base64, 'image/jpeg', level);
       setState({ step: 'preview', uri, result });
     } catch (err) {
@@ -66,8 +85,8 @@ export default function PhotoScreen() {
     await run(() => ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.9 }));
   }
 
-  function validate(result: AnalyseResult) {
-    addLesson(result.lesson);
+  function validate(result: Result) {
+    if (!result.fromBank) addLesson(result.lesson);
     setState({ step: 'idle' });
     router.push(`/mission/${result.lesson.id}`);
   }
@@ -77,13 +96,13 @@ export default function PhotoScreen() {
       <Screen>
         <ScrollView contentContainerStyle={styles.content}>
 
-          {!serverReady && (
+          {!canRead && (
             <Card style={{ borderColor: c.sunDark, backgroundColor: c.sun }}>
               <Body style={{ color: c.onSun }} bold>
-                Le serveur n'est pas encore branché.
+                La lecture des photos n'est pas disponible dans cette version.
               </Body>
               <Body style={{ color: c.onSun }}>
-                Crée un fichier .env à partir de .env.example avec l'adresse Supabase et la clé anon, puis relance l'appli.
+                Elle demande une version installée de l'appli (voir docs/dev-build.md), pas Expo Go. En attendant, tape ou colle le texte de la leçon : les jeux se fabriquent pareil.
               </Body>
             </Card>
           )}
@@ -96,13 +115,17 @@ export default function PhotoScreen() {
                   <Body>Prends la leçon en photo, ou tape les mots de la dictée et la poésie : je fabrique les jeux, tu vérifies, et c'est parti.</Body>
                 </Card>
               </View>
-              <Button label="📷 Prendre la page en photo" variant="sun" onPress={takePhoto} disabled={!serverReady} />
-              <Button label="Choisir dans la galerie" variant="ghost" onPress={chooseFromLibrary} disabled={!serverReady} />
-              <Button label="✍️ Taper les mots ou la poésie" onPress={() => router.push('/ajouter')} />
+              <Button label="📷 Prendre la page en photo" variant="sun" onPress={takePhoto} disabled={!canRead} />
+              <Button label="Choisir dans la galerie" variant="ghost" onPress={chooseFromLibrary} disabled={!canRead} />
+              <Button label="✍️ Taper ou coller le texte" onPress={() => router.push('/ajouter')} />
               <Card>
                 <Body muted>Pour une bonne lecture : page bien à plat, lumière du jour, toute la page dans le cadre.</Body>
                 <Body muted>Niveau en cours : {level}. Change-le dans l'espace parent si besoin.</Body>
-                <Body muted>La photo est lue puis oubliée : elle n'est enregistrée nulle part.</Body>
+                <Body muted>
+                  {ocrAvailable
+                    ? 'La photo est lue sur le téléphone, puis oubliée : rien n\'est envoyé.'
+                    : 'La photo est lue puis oubliée : elle n\'est enregistrée nulle part.'}
+                </Body>
               </Card>
             </>
           )}
@@ -112,7 +135,7 @@ export default function PhotoScreen() {
               <Image source={{ uri: state.uri }} style={styles.thumb} resizeMode="cover" />
               <ActivityIndicator size="large" color={c.primary} />
               <Body bold>Gribouille lit la page...</Body>
-              <Body muted style={styles.centerText}>Une vingtaine de secondes, le temps de fabriquer les jeux.</Body>
+              <Body muted style={styles.centerText}>{ocrAvailable ? 'Quelques secondes, tout se passe sur le téléphone.' : 'Une vingtaine de secondes, le temps de fabriquer les jeux.'}</Body>
             </Card>
           )}
 
