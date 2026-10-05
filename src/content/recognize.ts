@@ -17,7 +17,7 @@ export type Recognition =
 
 type Op = { a: number; b: number; op: '+' | '-' | '×'; result: number };
 
-const OP_RE = /(\d{1,3})\s*([+\-−×x*:])\s*(\d{1,3})(?:\s*=\s*(\d{1,4}))?/g;
+const OP_RE = /(\d{1,3})[ \t]*([+\-−×x*:])[ \t]*(\d{1,3})(?:[ \t]*=[ \t]*(\d{1,4}))?/g;
 
 /** Les calculs trouvés dans le texte, avec leur résultat recalculé */
 export function findOperations(text: string): Op[] {
