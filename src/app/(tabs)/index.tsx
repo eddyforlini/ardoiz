@@ -1,9 +1,11 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Gribouille } from '@/components/gribouille';
 import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
+import { LESSONS, findLesson } from '@/content/bank-ce1';
+import { SUBJECT_LABEL } from '@/content/types';
 import { useUnivers } from '@/univers/UniversProvider';
 
 /**
@@ -15,10 +17,11 @@ const SAMPLE = {
   serie: 4,
   monnaie: 120,
   mission: {
+    id: 'maths-nombres-100',
     matiere: 'Maths',
     notion: 'Les nombres jusqu\'à 100',
     source: 'Leçon photographiée hier',
-    jeux: 4,
+    jeux: findLesson('maths-nombres-100')?.exercises.length ?? 0,
     minutes: 6,
   },
   prochainControle: { quoi: 'Dictée', dans: 3, pret: 70 },
@@ -68,7 +71,7 @@ export default function HomeScreen() {
             <Body style={{ color: c.onPrimary, opacity: 0.9 }}>
               {SAMPLE.mission.source} · {SAMPLE.mission.jeux} jeux · {SAMPLE.mission.minutes} min
             </Body>
-            <Button label={ado ? 'Go' : 'C\'est parti !'} variant="sun" />
+            <Button label={ado ? 'Go' : 'C\'est parti !'} variant="sun" onPress={() => router.push(`/mission/${SAMPLE.mission.id}`)} />
           </Card>
 
           <Card>
@@ -101,8 +104,29 @@ export default function HomeScreen() {
             })}
           </Card>
 
+          <Card>
+            <Title size="md">Autres leçons à réviser</Title>
+            {LESSONS.map((l) => (
+              <Pressable
+                key={l.id}
+                accessibilityRole="button"
+                onPress={() => router.push(`/mission/${l.id}`)}
+                style={({ pressed }) => [styles.lesson, { borderColor: c.line, opacity: pressed ? 0.7 : 1 }]}>
+                <View style={styles.bubble}>
+                  <Body bold>{l.title}</Body>
+                  <Body muted>
+                    {SUBJECT_LABEL[l.subject]} · {l.exercises.length} jeux · {l.minutes} min
+                  </Body>
+                </View>
+                <Body style={{ color: c.primary }} bold>
+                  ›
+                </Body>
+              </Pressable>
+            ))}
+          </Card>
+
           <Body muted style={styles.note}>
-            Données d'exemple. Les vraies missions arriveront avec la photo de la leçon.
+            Leçons d'exemple. Les vraies missions arriveront avec la photo de la leçon.
           </Body>
         </ScrollView>
       </SafeAreaView>
@@ -120,5 +144,6 @@ const styles = StyleSheet.create({
   bar: { height: 12, borderRadius: 999, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 999 },
   strike: { textDecorationLine: 'line-through' },
+  lesson: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderTopWidth: 1 },
   note: { textAlign: 'center', fontSize: 13 },
 });
