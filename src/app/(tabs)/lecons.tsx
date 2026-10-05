@@ -8,7 +8,7 @@ import { useLessons } from '@/content/LessonsProvider';
 import { fold } from '@/content/poems';
 import { LEVELS, SOURCE_LABEL, SUBJECT_LABEL, THEMES, themeOf, type Lesson, type Level, type Subject } from '@/content/types';
 import { useProfile } from '@/profile/ProfileProvider';
-import { lessonHint } from '@/profile/progress';
+import { MASTERY_STATE, lessonHint, masteryState } from '@/profile/progress';
 import { useProgress } from '@/profile/ProgressProvider';
 import { useUnivers } from '@/univers/UniversProvider';
 
@@ -59,7 +59,14 @@ export default function LeconsScreen() {
     <Screen>
       <SafeAreaView style={styles.safe} edges={['top']}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Title size="xl">Leçons</Title>
+          <View style={styles.row}>
+            <Title size="xl" style={styles.grow}>
+              Leçons
+            </Title>
+            <Pressable accessibilityRole="button" accessibilityLabel="Voir le programme" onPress={() => router.push('/programme')}>
+              <Chip>🎓 Programme ›</Chip>
+            </Pressable>
+          </View>
           <TextInput
             value={query}
             onChangeText={setQuery}
@@ -143,7 +150,8 @@ export default function LeconsScreen() {
               </View>
               {sec.items.map((l) => {
                 const hint = lessonHint(progress, l.id);
-                const best = progress.mastery[l.id]?.best;
+                const state = masteryState(progress, l.id);
+                const stateColor = state === 'done' ? c.ok : state === 'progress' ? c.primary : c.soft;
                 return (
                   <Pressable
                     key={l.id}
@@ -163,7 +171,11 @@ export default function LeconsScreen() {
                         </Body>
                       )}
                     </View>
-                    {best !== undefined && <Chip>{best} %</Chip>}
+                    <Chip style={{ borderColor: stateColor }}>
+                      <Body style={{ color: stateColor, fontSize: 13 }} bold>
+                        {MASTERY_STATE[state].glyph} {MASTERY_STATE[state].label}
+                      </Body>
+                    </Chip>
                     <Body style={{ color: c.primary }} bold>
                       ›
                     </Body>

@@ -8,7 +8,7 @@ import { useLessons } from '@/content/LessonsProvider';
 import { SUBJECT_LABEL, type Lesson } from '@/content/types';
 import { GAME_LABEL } from '@/games';
 import { useProfile } from '@/profile/ProfileProvider';
-import { PIEGES_FIXED_NEEDED, missionsDone } from '@/profile/progress';
+import { MASTERY_STATE, PIEGES_FIXED_NEEDED, masteryState, missionsDone } from '@/profile/progress';
 import { useProgress } from '@/profile/ProgressProvider';
 import { useUnivers } from '@/univers/UniversProvider';
 
@@ -69,6 +69,7 @@ export default function ParentScreen() {
                 ? 'Aucune mission jouée pour l\'instant.'
                 : `Maîtrise moyenne des leçons jouées : ${avg} %. Chaque leçon revient à J+1, J+3 puis J+7 après une réussite.`}
             </Body>
+            <Button label={`🎓 Le programme de ${level}, attendu par attendu`} variant="ghost" onPress={() => router.push('/programme')} />
           </Card>
 
           <Card>
@@ -76,8 +77,9 @@ export default function ParentScreen() {
             {lessonsPlayed === 0 && <Body muted>Les leçons jouées apparaîtront ici avec leur niveau de maîtrise.</Body>}
             {lessons.filter((l) => progress.mastery[l.id]).map((l) => {
               const m = progress.mastery[l.id];
-              const status = m.best >= 80 ? 'Acquis' : m.best >= 50 ? 'En cours' : 'À retravailler';
-              const color = m.best >= 80 ? c.ok : m.best >= 50 ? c.primary : c.ko;
+              const state = masteryState(progress, l.id);
+              const status = MASTERY_STATE[state].label;
+              const color = state === 'done' ? c.ok : c.primary;
               return (
                 <View key={l.id} style={[styles.line, { borderColor: c.line }]}>
                   <View style={styles.grow}>
@@ -87,7 +89,7 @@ export default function ParentScreen() {
                     </Body>
                   </View>
                   <Chip style={{ borderColor: color }}>
-                    {status} {m.best} %
+                    {MASTERY_STATE[state].glyph} {status} · {m.best} %
                   </Chip>
                 </View>
               );
