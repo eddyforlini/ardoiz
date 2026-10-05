@@ -6,16 +6,34 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Gribouille } from '@/components/gribouille';
 import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
-import { findLesson } from '@/content/bank-ce1';
+import { LESSONS, findLesson } from '@/content/bank-ce1';
 import { speak, stopSpeaking } from '@/content/speech';
-import type { Exercise } from '@/content/types';
+import type { Exercise, Lesson } from '@/content/types';
 import { SUBJECT_LABEL } from '@/content/types';
 import { GAME_LABEL, Game } from '@/games';
-import { COINS_PER_GOOD, QUEST_REWARD, type MissionReward } from '@/profile/progress';
+import { COINS_PER_GOOD, PIEGES_ID, QUEST_REWARD, type MissionReward, type Progress } from '@/profile/progress';
 import { useProgress } from '@/profile/ProgressProvider';
 import { useUnivers } from '@/univers/UniversProvider';
 
 type Step = { exercise: Exercise; retry: boolean };
+
+/** Mission « Mes pièges » : les exercices ratés de l'enfant, toutes leçons mêlées */
+function buildPieges(progress: Progress): Lesson | undefined {
+  const ids = Object.keys(progress.errors);
+  const exercises = LESSONS.flatMap((l) => l.exercises.filter((e) => ids.includes(e.id))).slice(0, 8);
+  if (exercises.length === 0) return undefined;
+  return {
+    id: PIEGES_ID,
+    title: 'Mes pièges',
+    subject: 'francais',
+    source: 'lecon',
+    level: 'CE1',
+    notion: 'Retravailler ses erreurs',
+    summary: 'Ce sont les questions qui t\'ont piégé. Réussis-les deux fois et elles disparaissent du journal.',
+    minutes: Math.max(2, Math.round(exercises.length * 0.8)),
+    exercises,
+  };
+}
 
 /**
  * Déroulé d'une mission : un exercice après l'autre, feedback après chaque
@@ -24,10 +42,10 @@ type Step = { exercise: Exercise; retry: boolean };
  */
 export default function MissionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const lesson = findLesson(id);
   const { univers } = useUnivers();
   const c = univers.colors;
-  const { recordMission } = useProgress();
+  const { progress, recordMission } = useProgress();
+  const [lesson] = useState(() => (id === PIEGES_ID ? buildPieges(progress) : findLesson(id)));
 
   const [queue, setQueue] = useState<Step[]>(() =>
     (lesson?.exercises ?? []).map((exercise) => ({ exercise, retry: false })),
@@ -38,6 +56,7 @@ export default function MissionScreen() {
   const [good, setGood] = useState(0);
   const [firstTryErrors, setFirstTryErrors] = useState(0);
   const [attempt, setAttempt] = useState(0);
+  const [wrongIds, setWrongIds] = useState<string[]>([]);
   const finished = position >= queue.length && queue.length > 0;
   const step = queue[position];
   const played = useMemo(() => new Set(queue.slice(0, position).map((s) => s.exercise.kind)), [queue, position]);
@@ -67,7 +86,10 @@ export default function MissionScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       speak(univers.tone === 'ado' ? 'Bien joué.' : 'Bravo !');
     } else {
-      if (!step.retry) setFirstTryErrors((e) => e + 1);
+      if (!step.retry) {
+        setFirstTryErrors((e) => e + 1);
+        setWrongIds((w) => [...w, step.exercise.id]);
+      }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       if (step.exercise.explain) speak(step.exercise.explain);
     }
@@ -87,6 +109,8 @@ export default function MissionScreen() {
           total: lesson.exercises.length,
           firstTryErrors,
           kinds: [...new Set(queue.map((q) => q.exercise.kind))],
+          wrongIds,
+          rightIds: lesson.exercises.map((e) => e.id).filter((eid) => !wrongIds.includes(eid)),
         }),
       );
     }
@@ -97,7 +121,9 @@ export default function MissionScreen() {
 
   function quit() {
     stopSpeaking();
-    router.replace('/');
+    // Retour à l'écran d'où on vient plutôt qu'un nouvel accueil empilé
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
   }
 
   if (intro) {
@@ -258,7 +284,7 @@ export default function MissionScreen() {
     );
   }
 
-  const progress = Math.min(1, position / Math.max(1, queue.length));
+  const ratio = Math.min(1, position / Math.max(1, queue.length));
 
   return (
     <Screen>
@@ -268,7 +294,7 @@ export default function MissionScreen() {
             <Text style={[styles.close, { color: c.soft }]}>✕</Text>
           </Pressable>
           <View style={[styles.bar, { backgroundColor: c.line }]}>
-            <View style={[styles.barFill, { width: `${progress * 100}%`, backgroundColor: c.primary }]} />
+            <View style={[styles.barFill, { width: `${ratio * 100}%`, backgroundColor: c.primary }]} />
           </View>
           <Chip>
             {univers.currencySymbol} {good * COINS_PER_GOOD}

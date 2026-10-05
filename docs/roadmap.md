@@ -10,7 +10,8 @@ Une étape = une branche et une PR, essayée sur téléphone avec Expo Go avant 
 | 3. Photo vers mission | Supabase, Edge Function qui appelle Claude, validation parent | À faire |
 | 4. Voix | Réciter, épeler, lire à voix haute, Ardoiz qui parle | À faire |
 | 5. Motivation | Progrès enregistrés, révision espacée, série, quêtes du jour, coffres et autocollants, monde à construire, Gribouille qui évolue | En cours (PR 4) |
-| 5b. Motivation, suite | Codex des notions, Corrige Gribouille, Mes pièges, mode dys, animations de fête | À faire |
+| 5b. Apprendre de ses erreurs | Jeu « Corrige Gribouille », journal « Mes pièges » avec mission dédiée, espace parent (suivi par leçon) | En cours (PR 5) |
+| 5c. Motivation, suite | Codex des notions, mode dys, animations de fête, classe partagée | À faire |
 | 6. Parent et bêta | Espace parent, rapport hebdo, TestFlight et Play interne | À faire |
 
 Ensuite : autres niveaux, autres matières, classe partagée, mode sans écran, histoire du soir, appel de Gribouille, ardoise réelle.
