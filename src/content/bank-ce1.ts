@@ -20,6 +20,22 @@ const NOMBRES_100: Lesson = {
   minutes: 6,
   exercises: [
     {
+      id: 'n100-qty-1',
+      kind: 'quantity',
+      prompt: 'Fabrique le nombre 34 avec des barres de dix et des cubes',
+      target: 34,
+      tens: true,
+      explain: '34, c\'est 3 dizaines et 4 unités : trois barres et quatre cubes.',
+    },
+    {
+      id: 'n100-qty-2',
+      kind: 'quantity',
+      prompt: 'Fabrique le nombre 70',
+      target: 70,
+      tens: true,
+      explain: '70, c\'est 7 dizaines et 0 unité : sept barres, aucun cube.',
+    },
+    {
       id: 'n100-cmp-1',
       kind: 'choice',
       prompt: 'Quel est le plus grand ?',
@@ -283,6 +299,14 @@ const VERBE_SUJET: Lesson = {
       explain: 'Le sujet d\'abord (ma sœur), puis le verbe (lit), puis le reste.',
     },
     {
+      id: 'vs-card-1',
+      kind: 'flashcard',
+      prompt: 'Comment trouve-t-on le sujet ?',
+      front: 'Quelle question pose-t-on pour trouver le sujet du verbe ?',
+      back: '« Qui est-ce qui ? » devant le verbe.',
+      explain: 'Qui est-ce qui dort ? Le chat. Le chat est le sujet.',
+    },
+    {
       id: 'vs-tf-2',
       kind: 'truefalse',
       statement: 'Pour trouver le sujet, on demande « qui est-ce qui ? ».',
@@ -304,6 +328,28 @@ const TABLES_2_5: Lesson = {
     'Multiplier par 2, c\'est doubler : 2 × 4, c\'est 4 + 4. Multiplier par 5, c\'est compter de 5 en 5 : les résultats finissent toujours par 0 ou par 5.',
   minutes: 6,
   exercises: [
+    {
+      id: 't25-match',
+      kind: 'match',
+      prompt: 'Relie chaque calcul à son résultat avant la fin du chrono',
+      seconds: 40,
+      pairs: [
+        { a: '2 × 8', b: '16' },
+        { a: '5 × 6', b: '30' },
+        { a: '2 × 4', b: '8' },
+        { a: '5 × 3', b: '15' },
+        { a: '2 × 6', b: '12' },
+      ],
+      explain: 'Bats ton record la prochaine fois : les tables rentrent en les répétant.',
+    },
+    {
+      id: 't25-card-1',
+      kind: 'flashcard',
+      prompt: 'Dis le résultat, puis vérifie',
+      front: '5 × 7',
+      back: '35',
+      explain: '5 × 7 = 35. Les résultats de la table de 5 finissent par 0 ou 5.',
+    },
     {
       id: 't25-count-1',
       kind: 'count',

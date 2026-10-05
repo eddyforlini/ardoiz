@@ -200,6 +200,18 @@ export function poemLesson(input: { title: string; author?: string; lines: strin
       });
     }
 
+    // Réciter la suite : on lit un vers, on dit le suivant, on vérifie
+    if (g.length >= 2) {
+      exercises.push({
+        id: `${id}-card-${gi}`,
+        kind: 'flashcard',
+        prompt: 'Récite le vers qui vient après',
+        front: g[0],
+        back: g[1],
+        explain: 'Relis les deux vers à voix haute, l\'un après l\'autre.',
+      });
+    }
+
     let distractors = pick(2);
     if (distractors.length < 2) {
       const extra = g.flatMap((l) => l.split(/[\s'’]+/)).filter((w) => w.length > 3 && !ownEndings.includes(w));

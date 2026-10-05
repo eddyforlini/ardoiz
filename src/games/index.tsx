@@ -5,9 +5,12 @@ import { CountGame } from './count';
 import { DictationGame } from './dictation';
 import { FixGame } from './fix';
 import { FlashGame } from './flash';
+import { FlashcardGame } from './flashcard';
+import { MatchGame } from './match';
 import { NumberlineGame } from './numberline';
 import { OrderGame } from './order';
 import { PairsGame } from './pairs';
+import { QuantityGame } from './quantity';
 import { ScrambleGame } from './scramble';
 import { SentenceGame } from './sentence';
 import { SortGame } from './sort';
@@ -50,6 +53,12 @@ export function Game(props: GameProps<Exercise>) {
       return <PairsGame {...props} exercise={exercise} />;
     case 'fix':
       return <FixGame {...props} exercise={exercise} />;
+    case 'flashcard':
+      return <FlashcardGame {...props} exercise={exercise} />;
+    case 'match':
+      return <MatchGame {...props} exercise={exercise} />;
+    case 'quantity':
+      return <QuantityGame {...props} exercise={exercise} />;
   }
 }
 
@@ -70,4 +79,7 @@ export const GAME_LABEL: Record<Exercise['kind'], string> = {
   count: 'Compte les objets',
   pairs: 'Memory',
   fix: 'Corrige Gribouille',
+  flashcard: 'Carte mémoire',
+  match: 'Paires chrono',
+  quantity: 'Dizaines et unités',
 };

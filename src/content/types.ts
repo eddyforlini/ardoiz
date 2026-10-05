@@ -198,7 +198,38 @@ export type FixExercise = Base & {
   distractors: string[];
 };
 
+/** Carte recto-verso auto-évaluée : la question, puis la réponse, et l'enfant dit s'il savait */
+export type FlashcardExercise = Base & {
+  kind: 'flashcard';
+  prompt: string;
+  front: string;
+  back: string;
+  /** Texte lu à la place du recto, si besoin */
+  speak?: string;
+};
+
+/** Paires chrono : relier chaque élément de gauche à son élément de droite avant la fin du temps */
+export type MatchExercise = Base & {
+  kind: 'match';
+  prompt: string;
+  pairs: { a: string; b: string }[];
+  /** Temps accordé, en secondes */
+  seconds: number;
+};
+
+/** Manipuler des quantités : construire un nombre avec des barres de dix et des cubes */
+export type QuantityExercise = Base & {
+  kind: 'quantity';
+  prompt: string;
+  target: number;
+  /** Vrai pour proposer des barres de dix en plus des unités */
+  tens: boolean;
+};
+
 export type Exercise =
+  | FlashcardExercise
+  | MatchExercise
+  | QuantityExercise
   | FixExercise
   | ChoiceExercise
   | TrueFalseExercise
