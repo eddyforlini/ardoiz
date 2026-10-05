@@ -6,7 +6,7 @@
 export type Subject = 'maths' | 'francais';
 
 /** Type de page photographiée, qui décide des jeux proposés */
-export type SourceKind = 'poesie' | 'mots' | 'lecon' | 'calcul' | 'numeration' | 'grammaire';
+export type SourceKind = 'poesie' | 'mots' | 'lecon' | 'calcul' | 'numeration' | 'grammaire' | 'lecture';
 
 export type Level = 'CP' | 'CE1' | 'CE2' | 'CM1' | 'CM2' | '6e' | '5e' | '4e' | '3e';
 
@@ -89,8 +89,72 @@ export type SpeedExercise = Base & {
   target: number;
 };
 
+/** Vrai ou faux : une affirmation, deux boutons, un petit chrono */
+export type TrueFalseExercise = Base & {
+  kind: 'truefalse';
+  statement: string;
+  answer: boolean;
+};
+
+/** Trier : chaque mot va dans la bonne boîte */
+export type SortExercise = Base & {
+  kind: 'sort';
+  prompt: string;
+  boxes: string[];
+  /** Mot et index de la boîte où il doit aller */
+  items: { word: string; box: number }[];
+};
+
+/** Toucher le bon mot dans une phrase (le verbe, le sujet, le nom...) */
+export type TapWordExercise = Base & {
+  kind: 'tapword';
+  prompt: string;
+  words: string[];
+  /** Index des mots à toucher dans words */
+  answer: number[];
+};
+
+/** Phrase à reconstruire : remettre les mots dans l'ordre */
+export type SentenceExercise = Base & {
+  kind: 'sentence';
+  prompt: string;
+  words: string[];
+};
+
+/** Dictée : on entend le mot, on l'écrit au clavier */
+export type DictationExercise = Base & {
+  kind: 'dictation';
+  word: string;
+  /** Phrase lue pour donner le contexte, optionnelle */
+  sentence?: string;
+};
+
+/** Dénombrer : compter les objets affichés */
+export type CountExercise = Base & {
+  kind: 'count';
+  prompt: string;
+  /** Objet affiché (un emoji), remplacé par l'univers quand il en a un */
+  emoji: string;
+  answer: number;
+  options: number[];
+};
+
+/** Memory : retrouver les paires (calcul et résultat, mot et définition...) */
+export type PairsExercise = Base & {
+  kind: 'pairs';
+  prompt: string;
+  pairs: { a: string; b: string }[];
+};
+
 export type Exercise =
   | ChoiceExercise
+  | TrueFalseExercise
+  | SortExercise
+  | TapWordExercise
+  | SentenceExercise
+  | DictationExercise
+  | CountExercise
+  | PairsExercise
   | NumberlineExercise
   | ScrambleExercise
   | FlashExercise
@@ -130,4 +194,5 @@ export const SOURCE_LABEL: Record<SourceKind, string> = {
   calcul: 'Calcul',
   numeration: 'Numération',
   grammaire: 'Grammaire',
+  lecture: 'Lecture',
 };

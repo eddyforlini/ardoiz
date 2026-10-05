@@ -189,6 +189,13 @@ const MOTS_SEMAINE: Lesson = {
     },
     { id: 'mot-scr-3', kind: 'scramble', word: 'jardin', explain: 'jar-din : le son « in » s\'écrit i-n, comme dans chemin.' },
     {
+      id: 'mot-dict-1',
+      kind: 'dictation',
+      word: 'toujours',
+      sentence: 'Je range toujours mes affaires.',
+      explain: 'Toujours : t-o-u-j-o-u-r-s, avec un s à la fin.',
+    },
+    {
       id: 'mot-flash-3',
       kind: 'flash',
       word: 'souvent',
@@ -198,7 +205,144 @@ const MOTS_SEMAINE: Lesson = {
   ],
 };
 
-export const LESSONS: Lesson[] = [NOMBRES_100, CIGALE, MOTS_SEMAINE];
+const VERBE_SUJET: Lesson = {
+  id: 'grammaire-verbe-sujet',
+  title: 'Le verbe et le sujet',
+  subject: 'francais',
+  source: 'grammaire',
+  level: 'CE1',
+  notion: 'Reconnaître le verbe et son sujet dans une phrase',
+  attendu: 'Identifier le verbe conjugué et son sujet dans des phrases simples.',
+  summary:
+    'Le verbe, c\'est le mot qui dit ce qu\'on fait : il change quand on change le temps (hier, demain). Le sujet, c\'est qui fait l\'action : on le trouve en demandant « qui est-ce qui ? ».',
+  minutes: 6,
+  exercises: [
+    {
+      id: 'vs-tap-1',
+      kind: 'tapword',
+      prompt: 'Touche le verbe',
+      words: ['Le', 'chat', 'dort', 'sur', 'le', 'canapé.'],
+      answer: [2],
+      explain: 'Hier, le chat dormait. Demain, il dormira. Le mot qui change, c\'est le verbe : dort.',
+    },
+    {
+      id: 'vs-tap-2',
+      kind: 'tapword',
+      prompt: 'Touche le sujet',
+      words: ['Les', 'enfants', 'jouent', 'dans', 'la', 'cour.'],
+      answer: [0, 1],
+      explain: 'Qui est-ce qui joue ? Les enfants. C\'est le sujet.',
+    },
+    {
+      id: 'vs-tf-1',
+      kind: 'truefalse',
+      statement: 'Dans « Papa prépare le repas », le verbe est « repas ».',
+      answer: false,
+      explain: 'Le verbe, c\'est prépare : hier papa préparait. « Repas » ne change pas, c\'est un nom.',
+    },
+    {
+      id: 'vs-sort-1',
+      kind: 'sort',
+      prompt: 'Range chaque mot dans la bonne boîte',
+      boxes: ['Verbes', 'Noms'],
+      items: [
+        { word: 'mange', box: 0 },
+        { word: 'table', box: 1 },
+        { word: 'court', box: 0 },
+        { word: 'école', box: 1 },
+        { word: 'chante', box: 0 },
+        { word: 'vélo', box: 1 },
+      ],
+      explain: 'Un verbe se conjugue (je mange, tu manges). Un nom se met après « un » ou « une » : une table.',
+    },
+    {
+      id: 'vs-sentence-1',
+      kind: 'sentence',
+      prompt: 'Remets la phrase dans l\'ordre',
+      words: ['Ma', 'sœur', 'lit', 'un', 'livre.'],
+      explain: 'Le sujet d\'abord (ma sœur), puis le verbe (lit), puis le reste.',
+    },
+    {
+      id: 'vs-tf-2',
+      kind: 'truefalse',
+      statement: 'Pour trouver le sujet, on demande « qui est-ce qui ? ».',
+      answer: true,
+      explain: 'Oui : qui est-ce qui lit ? Ma sœur. Le sujet, c\'est ma sœur.',
+    },
+  ],
+};
+
+const TABLES_2_5: Lesson = {
+  id: 'calcul-tables-2-5',
+  title: 'Les tables de 2 et de 5',
+  subject: 'maths',
+  source: 'calcul',
+  level: 'CE1',
+  notion: 'Mémoriser les tables de multiplication de 2 et de 5',
+  attendu: 'Connaître les tables de multiplication de 2 et de 5.',
+  summary:
+    'Multiplier par 2, c\'est doubler : 2 × 4, c\'est 4 + 4. Multiplier par 5, c\'est compter de 5 en 5 : les résultats finissent toujours par 0 ou par 5.',
+  minutes: 6,
+  exercises: [
+    {
+      id: 't25-count-1',
+      kind: 'count',
+      prompt: 'Combien y a-t-il d\'objets ? Touche-les pour compter.',
+      emoji: '🍎',
+      answer: 10,
+      options: [8, 10, 12],
+      explain: '2 rangées de 5, ou 5 paquets de 2 : ça fait 10.',
+    },
+    {
+      id: 't25-pairs-1',
+      kind: 'pairs',
+      prompt: 'Retrouve chaque calcul et son résultat',
+      pairs: [
+        { a: '2 × 3', b: '6' },
+        { a: '5 × 2', b: '10' },
+        { a: '2 × 7', b: '14' },
+        { a: '5 × 4', b: '20' },
+        { a: '5 × 5', b: '25' },
+        { a: '2 × 9', b: '18' },
+      ],
+      explain: 'Les résultats de la table de 5 finissent par 0 ou 5, ceux de la table de 2 sont toujours pairs.',
+    },
+    {
+      id: 't25-tf-1',
+      kind: 'truefalse',
+      statement: '5 × 6 = 30',
+      answer: true,
+      explain: '5, 10, 15, 20, 25, 30 : six sauts de 5, ça fait 30.',
+    },
+    {
+      id: 't25-tf-2',
+      kind: 'truefalse',
+      statement: '2 × 8 = 14',
+      answer: false,
+      explain: '2 × 8, c\'est 8 + 8 = 16.',
+    },
+    {
+      id: 't25-speed-1',
+      kind: 'speed',
+      prompt: 'Calcul éclair : tables de 2 et de 5',
+      seconds: 45,
+      target: 6,
+      items: [
+        { q: '2 × 4', a: 8 },
+        { q: '5 × 3', a: 15 },
+        { q: '2 × 6', a: 12 },
+        { q: '5 × 7', a: 35 },
+        { q: '2 × 10', a: 20 },
+        { q: '5 × 9', a: 45 },
+        { q: '2 × 5', a: 10 },
+        { q: '5 × 8', a: 40 },
+      ],
+      explain: 'Pas grave : on y revient demain, les tables rentrent en les répétant un peu chaque jour.',
+    },
+  ],
+};
+
+export const LESSONS: Lesson[] = [NOMBRES_100, CIGALE, MOTS_SEMAINE, VERBE_SUJET, TABLES_2_5];
 
 export function findLesson(id: string | undefined): Lesson | undefined {
   return LESSONS.find((l) => l.id === id);
