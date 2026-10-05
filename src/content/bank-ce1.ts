@@ -15,6 +15,7 @@ const NOMBRES_100: Lesson = {
   level: 'CE1',
   notion: 'Comparer, ranger et repérer les nombres jusqu\'à 100',
   attendu: 'Comprendre et utiliser des nombres entiers pour dénombrer, ordonner, repérer, comparer.',
+  attenduId: 'ce1-nb-comparer',
   summary:
     'Dans un nombre à deux chiffres, le chiffre de gauche compte les dizaines et celui de droite les unités. Pour comparer deux nombres, on regarde d\'abord les dizaines.',
   minutes: 6,
@@ -111,6 +112,7 @@ const CIGALE: Lesson = {
   level: 'CE1',
   notion: 'Mémoriser et réciter un poème',
   attendu: 'Dire pour être entendu et compris : mémoriser des textes.',
+  attenduId: 'ce1-oral-memoriser',
   summary:
     'Une fable de Jean de La Fontaine. La cigale a chanté tout l\'été, et quand l\'hiver arrive, elle n\'a plus rien à manger. Les huit premiers vers, à savoir par cœur.',
   minutes: 7,
@@ -174,6 +176,7 @@ const MOTS_SEMAINE: Lesson = {
   level: 'CE1',
   notion: 'Orthographier les mots invariables et les mots fréquents',
   attendu: 'Mémoriser l\'orthographe des mots fréquents et des mots invariables.',
+  attenduId: 'ce1-ortho-mots',
   summary:
     'Sept mots à savoir écrire pour la dictée de vendredi : toujours, beaucoup, maison, jardin, chemin, oiseau, souvent.',
   minutes: 6,
@@ -239,6 +242,7 @@ const VERBE_SUJET: Lesson = {
   level: 'CE1',
   notion: 'Reconnaître le verbe et son sujet dans une phrase',
   attendu: 'Identifier le verbe conjugué et son sujet dans des phrases simples.',
+  attenduId: 'ce1-gram-verbe-sujet',
   summary:
     'Le verbe, c\'est le mot qui dit ce qu\'on fait : il change quand on change le temps (hier, demain). Le sujet, c\'est qui fait l\'action : on le trouve en demandant « qui est-ce qui ? ».',
   minutes: 6,
@@ -324,6 +328,7 @@ const TABLES_2_5: Lesson = {
   level: 'CE1',
   notion: 'Mémoriser les tables de multiplication de 2 et de 5',
   attendu: 'Connaître les tables de multiplication de 2 et de 5.',
+  attenduId: 'ce1-calc-tables',
   summary:
     'Multiplier par 2, c\'est doubler : 2 × 4, c\'est 4 + 4. Multiplier par 5, c\'est compter de 5 en 5 : les résultats finissent toujours par 0 ou par 5.',
   minutes: 6,

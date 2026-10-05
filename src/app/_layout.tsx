@@ -67,6 +67,15 @@ function Root() {
           }}
         />
         <Stack.Screen
+          name="programme"
+          options={{
+            headerShown: true,
+            title: 'Programme',
+            headerStyle: { backgroundColor: univers.colors.card },
+            headerTintColor: univers.colors.ink,
+          }}
+        />
+        <Stack.Screen
           name="recompenses"
           options={{
             headerShown: true,

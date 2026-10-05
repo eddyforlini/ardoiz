@@ -261,6 +261,8 @@ export type Lesson = {
   theme?: Theme;
   /** Attendu officiel du programme, cité tel quel */
   attendu?: string;
+  /** Identifiant de l'attendu dans src/content/programme.ts, quand on le connaît */
+  attenduId?: string;
   /** Pour l'écran de découverte : la leçon en quelques lignes */
   summary: string;
   exercises: Exercise[];

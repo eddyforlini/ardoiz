@@ -340,3 +340,29 @@ export function missionReason(p: Progress, lessonId: string, today = dayKey()): 
   }
   return m.best >= 80 ? 'Tu la connais bien, on s\'entraîne encore un peu.' : 'On la retravaille ensemble.';
 }
+
+/** Trois états lisibles par un enfant, à la place d'un pourcentage : à découvrir, en cours, acquis */
+export type MasteryState = 'new' | 'progress' | 'done';
+
+export const MASTERY_STATE: Record<MasteryState, { glyph: string; label: string }> = {
+  new: { glyph: '○', label: 'À découvrir' },
+  progress: { glyph: '◐', label: 'En cours' },
+  done: { glyph: '●', label: 'Acquis' },
+};
+
+export function masteryState(p: Progress, lessonId: string): MasteryState {
+  const m = p.mastery[lessonId];
+  if (!m) return 'new';
+  return m.best >= 80 ? 'done' : 'progress';
+}
+
+/** L'état le plus avancé parmi plusieurs leçons (pour un attendu du programme) */
+export function bestState(p: Progress, lessonIds: string[]): MasteryState {
+  const order: MasteryState[] = ['new', 'progress', 'done'];
+  let best: MasteryState = 'new';
+  for (const id of lessonIds) {
+    const s = masteryState(p, id);
+    if (order.indexOf(s) > order.indexOf(best)) best = s;
+  }
+  return best;
+}
