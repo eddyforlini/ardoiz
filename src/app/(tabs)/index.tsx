@@ -7,22 +7,14 @@ import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
 import { LESSONS } from '@/content/bank-ce1';
 import { SUBJECT_LABEL } from '@/content/types';
 import { useProfile } from '@/profile/ProfileProvider';
+import { QUESTS, lessonHint, pickMission, stageFor } from '@/profile/progress';
+import { useProgress } from '@/profile/ProgressProvider';
 import { useUnivers } from '@/univers/UniversProvider';
 
-/**
- * Données d'exemple, en attendant le moteur d'exercices (étape 2) et le
- * pipeline photo (étape 3). Elles montrent à quoi ressemblera l'accueil.
- */
+/** Prénom et contrôle d'exemple, en attendant le compte parent (étape 3) et la photo de l'agenda */
 const SAMPLE = {
   prenom: 'Léa',
-  serie: 4,
-  monnaie: 120,
-  prochainControle: { quoi: 'Dictée', dans: 3, pret: 70 },
-  quetes: [
-    { label: '5 bonnes réponses', fait: 3, total: 5 },
-    { label: 'Un jeu à la voix', fait: 0, total: 1 },
-    { label: 'Finir la mission du jour', fait: 0, total: 1 },
-  ],
+  prochainControle: { quoi: 'Dictée', dans: 3, lessonId: 'mots-semaine-3' },
 };
 
 export default function HomeScreen() {
@@ -30,8 +22,12 @@ export default function HomeScreen() {
   const c = univers.colors;
   const ado = univers.tone === 'ado';
   const { level } = useProfile();
+  const { progress } = useProgress();
   const lessons = LESSONS.filter((l) => l.level === level);
-  const mission = lessons[0];
+  const mission = pickMission(progress, lessons);
+  const stage = stageFor(progress.xp);
+  const ready = progress.mastery[SAMPLE.prochainControle.lessonId]?.best ?? 0;
+  const missionDone = mission && progress.mastery[mission.id] && progress.mastery[mission.id].lastDay === progress.today.day && progress.today.missions > 0;
 
   return (
     <Screen>
@@ -39,9 +35,9 @@ export default function HomeScreen() {
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.topbar}>
             <Chip>
-              {univers.currencySymbol} {SAMPLE.monnaie} {univers.currency}
+              {univers.currencySymbol} {progress.coins} {univers.currency}
             </Chip>
-            <Chip>🔥 {SAMPLE.serie} jours</Chip>
+            <Chip>🔥 {progress.streak.count} jour{progress.streak.count > 1 ? 's' : ''}</Chip>
             <Link href="/niveau" asChild>
               <Pressable accessibilityRole="button" accessibilityLabel="Changer de niveau">
                 <Chip>{level} ▾</Chip>
@@ -59,7 +55,17 @@ export default function HomeScreen() {
             <Card style={styles.bubble}>
               <Body bold>
                 {ado ? `Yo ${SAMPLE.prenom}.` : `Coucou ${SAMPLE.prenom} !`}{' '}
-                {ado ? 'Une quête t\'attend.' : 'Prête pour ta mission ?'}
+                {missionDone
+                  ? ado
+                    ? 'Mission du jour faite. Encore une ?'
+                    : 'Mission du jour réussie ! On en refait une ?'
+                  : ado
+                    ? 'Une quête t\'attend.'
+                    : 'Prête pour ta mission ?'}
+              </Body>
+              <Body muted>
+                Gribouille {stage.stage.name}
+                {stage.next ? ` · ${Math.round(stage.ratio * 100)} % vers ${stage.next.name}` : ''}
               </Body>
             </Card>
           </View>
@@ -71,7 +77,7 @@ export default function HomeScreen() {
                 {SUBJECT_LABEL[mission.subject]} · {mission.title}
               </Title>
               <Body style={{ color: c.onPrimary, opacity: 0.9 }}>
-                {level} · {mission.exercises.length} jeux · {mission.minutes} min
+                {lessonHint(progress, mission.id) ?? 'Nouvelle leçon'} · {mission.exercises.length} jeux · {mission.minutes} min
               </Body>
               <Button label={ado ? 'Go' : 'C\'est parti !'} variant="sun" onPress={() => router.push(`/mission/${mission.id}`)} />
             </Card>
@@ -93,25 +99,33 @@ export default function HomeScreen() {
               <Title size="md">
                 {SAMPLE.prochainControle.quoi} dans {SAMPLE.prochainControle.dans} jours
               </Title>
-              <Chip>prête à {SAMPLE.prochainControle.pret} %</Chip>
+              <Chip>prête à {ready} %</Chip>
             </View>
             <View style={[styles.bar, { backgroundColor: c.line }]}>
-              <View style={[styles.barFill, { width: `${SAMPLE.prochainControle.pret}%`, backgroundColor: c.primary }]} />
+              <View style={[styles.barFill, { width: `${ready}%`, backgroundColor: c.primary }]} />
             </View>
-            <Body muted>Un plan jour par jour jusqu'au contrôle, construit depuis la photo.</Body>
+            <Body muted>
+              {ready === 0
+                ? 'Joue la mission « Mots de la semaine » pour faire monter la jauge.'
+                : ready < 80
+                  ? 'Encore une ou deux missions et la dictée est dans la poche.'
+                  : 'Prête ! Une dernière révision la veille et c\'est gagné.'}
+            </Body>
           </Card>
 
           <Card>
             <Title size="md">Quêtes du jour</Title>
-            {SAMPLE.quetes.map((q) => {
-              const done = q.fait >= q.total;
+            {QUESTS.map((q) => {
+              const fait = Math.min(q.total, q.done(progress));
+              const done = fait >= q.total;
               return (
-                <View key={q.label} style={styles.row}>
+                <View key={q.id} style={styles.row}>
                   <Body muted={done} style={done ? styles.strike : undefined}>
+                    {done ? '✓ ' : ''}
                     {q.label}
                   </Body>
                   <Body muted>
-                    {q.fait}/{q.total}
+                    {fait}/{q.total}
                   </Body>
                 </View>
               );
@@ -132,6 +146,11 @@ export default function HomeScreen() {
                   <Body muted>
                     {SUBJECT_LABEL[l.subject]} · {l.exercises.length} jeux · {l.minutes} min
                   </Body>
+                  {lessonHint(progress, l.id) && (
+                    <Body style={{ color: c.primary, fontSize: 13 }} bold>
+                      {lessonHint(progress, l.id)}
+                    </Body>
+                  )}
                 </View>
                 <Body style={{ color: c.primary }} bold>
                   ›

@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
 import { ProfileProvider } from '@/profile/ProfileProvider';
+import { ProgressProvider } from '@/profile/ProgressProvider';
 import { UniversProvider, useUnivers } from '@/univers/UniversProvider';
 
 SplashScreen.preventAutoHideAsync();
@@ -55,7 +56,9 @@ export default function RootLayout() {
   return (
     <UniversProvider>
       <ProfileProvider>
-        <Root />
+        <ProgressProvider>
+          <Root />
+        </ProgressProvider>
       </ProfileProvider>
     </UniversProvider>
   );

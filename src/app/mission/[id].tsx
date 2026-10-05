@@ -11,11 +11,9 @@ import { speak, stopSpeaking } from '@/content/speech';
 import type { Exercise } from '@/content/types';
 import { SUBJECT_LABEL } from '@/content/types';
 import { GAME_LABEL, Game } from '@/games';
+import { COINS_PER_GOOD, QUEST_REWARD, type MissionReward } from '@/profile/progress';
+import { useProgress } from '@/profile/ProgressProvider';
 import { useUnivers } from '@/univers/UniversProvider';
-
-/** Monnaie gagnée par bonne réponse, et bonus pour une mission sans faute */
-const REWARD_PER_GOOD = 10;
-const REWARD_PERFECT = 20;
 
 type Step = { exercise: Exercise; retry: boolean };
 
@@ -29,6 +27,7 @@ export default function MissionScreen() {
   const lesson = findLesson(id);
   const { univers } = useUnivers();
   const c = univers.colors;
+  const { recordMission } = useProgress();
 
   const [queue, setQueue] = useState<Step[]>(() =>
     (lesson?.exercises ?? []).map((exercise) => ({ exercise, retry: false })),
@@ -42,6 +41,9 @@ export default function MissionScreen() {
   const finished = position >= queue.length && queue.length > 0;
   const step = queue[position];
   const played = useMemo(() => new Set(queue.slice(0, position).map((s) => s.exercise.kind)), [queue, position]);
+  const [reward, setReward] = useState<MissionReward | null>(null);
+  const [chestOpen, setChestOpen] = useState(false);
+
 
   if (!lesson) {
     return (
@@ -75,6 +77,19 @@ export default function MissionScreen() {
     stopSpeaking();
     const retryNeeded = result === false && !step.retry;
     if (retryNeeded) setQueue((q) => [...q, { exercise: step.exercise, retry: true }]);
+    const last = !retryNeeded && position + 1 >= queue.length;
+    if (last && lesson && !reward) {
+      // Fin de mission : on enregistre une seule fois et on garde ce qui est gagné pour l'écran de fin
+      setReward(
+        recordMission({
+          lessonId: lesson.id,
+          good,
+          total: lesson.exercises.length,
+          firstTryErrors,
+          kinds: [...new Set(queue.map((q) => q.exercise.kind))],
+        }),
+      );
+    }
     setResult(null);
     setAttempt((a) => a + 1);
     setPosition((p) => p + 1);
@@ -136,7 +151,6 @@ export default function MissionScreen() {
 
   if (finished) {
     const perfect = firstTryErrors === 0;
-    const earned = good * REWARD_PER_GOOD + (perfect ? REWARD_PERFECT : 0);
     const ado = univers.tone === 'ado';
     return (
       <Screen>
@@ -168,24 +182,72 @@ export default function MissionScreen() {
               </View>
               <View style={styles.statRow}>
                 <Body muted>Jeux joués</Body>
-                <Body bold>{[...played].map((k) => GAME_LABEL[k]).join(', ')}</Body>
+                <Body bold style={styles.statValue}>
+                  {[...played].map((k) => GAME_LABEL[k]).join(', ')}
+                </Body>
               </View>
-              <View style={styles.statRow}>
-                <Body muted>Gagné</Body>
-                <Chip style={{ backgroundColor: c.sun, borderColor: c.sunDark }}>
-                  {univers.currencySymbol} +{earned} {univers.currency}
-                </Chip>
-              </View>
+              {reward && (
+                <View style={styles.statRow}>
+                  <Body muted>Gagné</Body>
+                  <Chip style={{ backgroundColor: c.sun, borderColor: c.sunDark }}>
+                    {univers.currencySymbol} +{reward.coins} {univers.currency}
+                  </Chip>
+                </View>
+              )}
               {perfect && (
                 <Body style={{ color: c.ok }} bold>
-                  Bonus sans faute : +{REWARD_PERFECT}
+                  Bonus sans faute compris !
+                </Body>
+              )}
+              {reward && reward.streak > 0 && (
+                <Body bold>
+                  🔥 Série : {reward.streak} jour{reward.streak > 1 ? 's' : ''}
+                </Body>
+              )}
+              {reward?.questsCompleted.map((q) => (
+                <Body key={q.id} style={{ color: c.ok }} bold>
+                  Quête réussie : {q.label} (+{QUEST_REWARD})
+                </Body>
+              ))}
+              {reward?.stageUp && (
+                <Body style={{ color: c.primary }} bold>
+                  Gribouille grandit : il est maintenant {reward.stageUp} !
                 </Body>
               )}
             </Card>
 
+            {reward?.sticker && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={chestOpen ? reward.sticker.name : `Ouvrir le ${univers.words.coffre}`}
+                onPress={() => {
+                  setChestOpen(true);
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+                }}
+                style={[styles.chest, { backgroundColor: chestOpen ? c.okBg : c.sun, borderColor: chestOpen ? c.ok : c.sunDark, borderRadius: univers.font.radius }]}>
+                {chestOpen ? (
+                  <>
+                    <Text style={styles.chestEmoji}>{reward.sticker.emoji}</Text>
+                    <Title size="md" style={styles.centerText}>
+                      {reward.sticker.name}
+                    </Title>
+                    <Body muted style={styles.centerText}>Nouvel autocollant dans tes récompenses.</Body>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.chestEmoji}>🎁</Text>
+                    <Title size="md" style={{ color: c.onSun }}>
+                      Touche pour ouvrir ton {univers.words.coffre.toLowerCase()}
+                    </Title>
+                  </>
+                )}
+              </Pressable>
+            )}
+
             <Card>
               <Body muted>{SUBJECT_LABEL[lesson.subject]} · à retenir</Body>
               <Body>{lesson.summary}</Body>
+              {reward && <Body muted>Gribouille te la reproposera le {formatDay(reward.due)}.</Body>}
             </Card>
 
             <Button label={univers.words.encore} variant="sun" onPress={() => router.replace(`/mission/${lesson.id}`)} />
@@ -209,7 +271,7 @@ export default function MissionScreen() {
             <View style={[styles.barFill, { width: `${progress * 100}%`, backgroundColor: c.primary }]} />
           </View>
           <Chip>
-            {univers.currencySymbol} {good * REWARD_PER_GOOD}
+            {univers.currencySymbol} {good * COINS_PER_GOOD}
           </Chip>
         </View>
 
@@ -246,6 +308,12 @@ export default function MissionScreen() {
   );
 }
 
+/** 2026-10-08 → 8/10 */
+function formatDay(day: string): string {
+  const [, m, d] = day.split('-');
+  return `${Number(d)}/${Number(m)}`;
+}
+
 /** Petit effet de fête de l'écran de fin, un par univers. Les animations viendront plus tard. */
 const CELEBRATION: Record<string, string> = {
   confettis: '🎉 🎊 🎉',
@@ -276,4 +344,7 @@ const styles = StyleSheet.create({
   speaker: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   stats: { gap: 10 },
   statRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
+  statValue: { flex: 1, textAlign: 'right' },
+  chest: { borderWidth: 2, borderBottomWidth: 6, padding: 16, alignItems: 'center', gap: 6 },
+  chestEmoji: { fontSize: 56 },
 });
