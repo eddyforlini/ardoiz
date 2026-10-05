@@ -39,6 +39,16 @@ function Root() {
           }}
         />
         <Stack.Screen
+          name="ajouter"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: 'Dictée ou poésie',
+            headerStyle: { backgroundColor: univers.colors.card },
+            headerTintColor: univers.colors.ink,
+          }}
+        />
+        <Stack.Screen
           name="niveau"
           options={{
             presentation: 'modal',

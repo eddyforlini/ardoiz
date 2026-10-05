@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { ScrambleExercise } from '@/content/types';
-import { speak } from '@/content/speech';
+import { sayWord } from '@/content/speech';
 import { useUnivers } from '@/univers/UniversProvider';
 import { Prompt, Tile, shuffle, type GameProps } from './shared';
 
@@ -17,8 +17,8 @@ export function ScrambleGame({ exercise, onAnswer, done }: GameProps<ScrambleExe
   const [used, setUsed] = useState<number[]>([]);
 
   useEffect(() => {
-    speak(exercise.word);
-  }, [exercise.word]);
+    sayWord(exercise.word, exercise.audio);
+  }, [exercise.word, exercise.audio]);
 
   const built = used.map((id) => letters.find((l) => l.id === id)?.ch ?? '').join('');
   const full = used.length === exercise.word.length;

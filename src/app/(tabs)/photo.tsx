@@ -94,11 +94,12 @@ export default function PhotoScreen() {
               <View style={styles.hello}>
                 <Gribouille size={80} mood="curieux" />
                 <Card style={styles.bubble}>
-                  <Body>Prends la leçon, la liste de mots ou la poésie en photo. Je fabrique les jeux, tu vérifies, et c'est parti.</Body>
+                  <Body>Prends la leçon en photo, ou tape les mots de la dictée et la poésie : je fabrique les jeux, tu vérifies, et c'est parti.</Body>
                 </Card>
               </View>
               <Button label="📷 Prendre la page en photo" variant="sun" onPress={takePhoto} disabled={!serverReady} />
               <Button label="Choisir dans la galerie" variant="ghost" onPress={chooseFromLibrary} disabled={!serverReady} />
+              <Button label="✍️ Taper les mots ou la poésie" onPress={() => router.push('/ajouter')} />
               <Card>
                 <Body muted>Pour une bonne lecture : page bien à plat, lumière du jour, toute la page dans le cadre.</Body>
                 <Body muted>Niveau en cours : {level}. Change-le sur l'accueil si besoin.</Body>
