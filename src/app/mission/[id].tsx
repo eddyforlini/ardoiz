@@ -34,6 +34,7 @@ export default function MissionScreen() {
     (lesson?.exercises ?? []).map((exercise) => ({ exercise, retry: false })),
   );
   const [position, setPosition] = useState(0);
+  const [intro, setIntro] = useState(true);
   const [result, setResult] = useState<boolean | null>(null);
   const [good, setGood] = useState(0);
   const [firstTryErrors, setFirstTryErrors] = useState(0);
@@ -82,6 +83,55 @@ export default function MissionScreen() {
   function quit() {
     stopSpeaking();
     router.replace('/');
+  }
+
+  if (intro) {
+    return (
+      <Screen>
+        <SafeAreaView style={styles.safe}>
+          <View style={styles.header}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Quitter la mission" onPress={quit} hitSlop={12}>
+              <Text style={[styles.close, { color: c.soft }]}>✕</Text>
+            </Pressable>
+            <Body muted>{univers.words.mission}</Body>
+          </View>
+          <ScrollView contentContainerStyle={styles.endContent}>
+            <View style={styles.mascot}>
+              <Gribouille size={120} mood="curieux" />
+            </View>
+            <Body muted style={styles.centerText}>
+              {SUBJECT_LABEL[lesson.subject]} · {lesson.level}
+            </Body>
+            <Title size="xl" style={styles.centerText}>
+              {lesson.title}
+            </Title>
+            <Card>
+              <View style={styles.feedbackRow}>
+                <Body style={styles.feedbackText}>{lesson.summary}</Body>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Écouter la leçon"
+                  onPress={() => speak(lesson.summary)}
+                  style={[styles.speaker, { backgroundColor: c.primaryTint }]}>
+                  <Text style={{ fontSize: 20 }}>🔊</Text>
+                </Pressable>
+              </View>
+            </Card>
+            <Body muted style={styles.centerText}>
+              {lesson.exercises.length} jeux · environ {lesson.minutes} min
+            </Body>
+            <Button
+              label={univers.tone === 'ado' ? 'Go' : 'Commencer'}
+              variant="sun"
+              onPress={() => {
+                stopSpeaking();
+                setIntro(false);
+              }}
+            />
+          </ScrollView>
+        </SafeAreaView>
+      </Screen>
+    );
   }
 
   if (finished) {
@@ -223,6 +273,7 @@ const styles = StyleSheet.create({
   endContent: { padding: 20, gap: 14, alignItems: 'stretch', paddingBottom: 40 },
   party: { fontSize: 28, textAlign: 'center' },
   mascot: { alignItems: 'center' },
+  speaker: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   stats: { gap: 10 },
   statRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
 });
