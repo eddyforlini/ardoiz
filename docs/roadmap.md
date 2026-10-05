@@ -11,6 +11,7 @@ Une étape = une branche et une PR, essayée sur téléphone avec Expo Go avant 
 | 3a. Dictée et poésie sans IA | Mots tapés par le parent (voix enregistrée mot par mot), poésie retrouvée par titre ou auteur dans une banque libre de droits, jeux fabriqués par règles sur le téléphone | En cours (PR 7) |
 | 3c. Bibliothèque | Onglet Leçons rangé par niveau, matière et thème, recherche, accueil allégé, choix du niveau à l'ajout | En cours (PR 8) |
 | 3d. Accueil enfant | Un seul bouton Jouer, trois onglets enfant, photo et espace parent derrière un petit calcul, mission qui dit pourquoi elle revient | En cours (PR 9) |
+| 3e. Trois jeux de plus | Carte mémoire auto-évaluée (récitation, tables), paires chrono avec record personnel, dizaines et unités à manipuler : 18 jeux | En cours (PR 10) |
 | 3b. Comptes | Compte parent Supabase, plusieurs enfants, progrès synchronisés | À faire |
 | 4. Voix | Réciter, épeler, lire à voix haute, Ardoiz qui parle | À faire |
 | 5. Motivation | Progrès enregistrés, révision espacée, série, quêtes du jour, coffres et autocollants, monde à construire, Gribouille qui évolue | En cours (PR 4) |
