@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Gribouille } from '@/components/gribouille';
 import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
-import { LESSONS, findLesson } from '@/content/bank-ce1';
+import { useLessons } from '@/content/LessonsProvider';
 import { speak, stopSpeaking } from '@/content/speech';
 import type { Exercise, Lesson } from '@/content/types';
 import { SUBJECT_LABEL } from '@/content/types';
@@ -18,9 +18,9 @@ import { useUnivers } from '@/univers/UniversProvider';
 type Step = { exercise: Exercise; retry: boolean };
 
 /** Mission « Mes pièges » : les exercices ratés de l'enfant, toutes leçons mêlées */
-function buildPieges(progress: Progress): Lesson | undefined {
+function buildPieges(progress: Progress, all: Lesson[]): Lesson | undefined {
   const ids = Object.keys(progress.errors);
-  const exercises = LESSONS.flatMap((l) => l.exercises.filter((e) => ids.includes(e.id))).slice(0, 8);
+  const exercises = all.flatMap((l) => l.exercises.filter((e) => ids.includes(e.id))).slice(0, 8);
   if (exercises.length === 0) return undefined;
   return {
     id: PIEGES_ID,
@@ -45,7 +45,8 @@ export default function MissionScreen() {
   const { univers } = useUnivers();
   const c = univers.colors;
   const { progress, recordMission } = useProgress();
-  const [lesson] = useState(() => (id === PIEGES_ID ? buildPieges(progress) : findLesson(id)));
+  const { lessons, findLesson } = useLessons();
+  const [lesson] = useState(() => (id === PIEGES_ID ? buildPieges(progress, lessons) : findLesson(id)));
 
   const [queue, setQueue] = useState<Step[]>(() =>
     (lesson?.exercises ?? []).map((exercise) => ({ exercise, retry: false })),

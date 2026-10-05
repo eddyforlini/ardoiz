@@ -23,3 +23,7 @@ npx expo lint
 - `src/univers/` les huit univers et le contexte qui fournit l'univers courant
 - `src/components/` Gribouille, cartes, boutons
 - `docs/` concept, idées, feuille de route
+
+## Serveur
+
+L'analyse des photos passe par une fonction Supabase qui appelle Claude. Mise en place dans `docs/serveur.md` ; l'appli lit l'adresse et la clé anon dans `.env` (voir `.env.example`).

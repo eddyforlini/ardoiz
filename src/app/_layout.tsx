@@ -3,6 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { LessonsProvider } from '@/content/LessonsProvider';
 import { ProfileProvider } from '@/profile/ProfileProvider';
 import { ProgressProvider } from '@/profile/ProgressProvider';
 import { UniversProvider, useUnivers } from '@/univers/UniversProvider';
@@ -57,7 +58,9 @@ export default function RootLayout() {
     <UniversProvider>
       <ProfileProvider>
         <ProgressProvider>
-          <Root />
+          <LessonsProvider>
+            <Root />
+          </LessonsProvider>
         </ProgressProvider>
       </ProfileProvider>
     </UniversProvider>

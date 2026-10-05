@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Body, Chip, Screen, Title } from '@/components/ui';
-import { LESSONS } from '@/content/bank-ce1';
+import { useLessons } from '@/content/LessonsProvider';
 import { LEVEL_GROUPS, type Level } from '@/content/types';
 import { useProfile } from '@/profile/ProfileProvider';
 import { useUnivers } from '@/univers/UniversProvider';
@@ -12,9 +12,10 @@ export default function NiveauScreen() {
   const { level: current, setLevel } = useProfile();
   const { univers } = useUnivers();
   const c = univers.colors;
+  const { lessons } = useLessons();
 
   function count(level: Level) {
-    return LESSONS.filter((l) => l.level === level).length;
+    return lessons.filter((l) => l.level === level).length;
   }
 
   return (

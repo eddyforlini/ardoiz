@@ -3,8 +3,8 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
-import { LESSONS } from '@/content/bank-ce1';
-import { SUBJECT_LABEL } from '@/content/types';
+import { useLessons } from '@/content/LessonsProvider';
+import { SUBJECT_LABEL, type Lesson } from '@/content/types';
 import { GAME_LABEL } from '@/games';
 import { useProfile } from '@/profile/ProfileProvider';
 import { PIEGES_FIXED_NEEDED, missionsDone } from '@/profile/progress';
@@ -12,8 +12,8 @@ import { useProgress } from '@/profile/ProgressProvider';
 import { useUnivers } from '@/univers/UniversProvider';
 
 /** Résumé d'un exercice pour le parent : l'énoncé ou le mot, selon le jeu */
-function describe(exerciseId: string): { title: string; lesson: string; game: string } | null {
-  for (const l of LESSONS) {
+function describe(exerciseId: string, all: Lesson[]): { title: string; lesson: string; game: string } | null {
+  for (const l of all) {
     const e = l.exercises.find((x) => x.id === exerciseId);
     if (!e) continue;
     const title =
@@ -29,6 +29,7 @@ export default function ParentScreen() {
   const c = univers.colors;
   const { level } = useProfile();
   const { progress, reset } = useProgress();
+  const { lessons, custom, removeLesson } = useLessons();
   const [confirm, setConfirm] = useState(false);
   const errors = Object.entries(progress.errors).sort((a, b) => b[1].count - a[1].count);
   const lessonsPlayed = Object.keys(progress.mastery).length;
@@ -57,7 +58,7 @@ export default function ParentScreen() {
           <Card>
             <Title size="md">Suivi par leçon</Title>
             {lessonsPlayed === 0 && <Body muted>Les leçons jouées apparaîtront ici avec leur niveau de maîtrise.</Body>}
-            {LESSONS.filter((l) => progress.mastery[l.id]).map((l) => {
+            {lessons.filter((l) => progress.mastery[l.id]).map((l) => {
               const m = progress.mastery[l.id];
               const status = m.best >= 80 ? 'Acquis' : m.best >= 50 ? 'En cours' : 'À retravailler';
               const color = m.best >= 80 ? c.ok : m.best >= 50 ? c.primary : c.ko;
@@ -83,7 +84,7 @@ export default function ParentScreen() {
               Les questions ratées au premier essai. Elles sortent du journal après {PIEGES_FIXED_NEEDED} réussites.
             </Body>
             {errors.map(([id, e]) => {
-              const d = describe(id);
+              const d = describe(id, lessons);
               if (!d) return null;
               return (
                 <View key={id} style={[styles.line, { borderColor: c.line }]}>
@@ -99,6 +100,22 @@ export default function ParentScreen() {
                 </View>
               );
             })}
+          </Card>
+
+          <Card>
+            <Title size="md">Leçons photographiées · {custom.length}</Title>
+            {custom.length === 0 && <Body muted>Les leçons créées depuis l'onglet Photo apparaîtront ici.</Body>}
+            {custom.map((l) => (
+              <View key={l.id} style={[styles.line, { borderColor: c.line }]}>
+                <View style={styles.grow}>
+                  <Body bold>{l.title}</Body>
+                  <Body muted style={styles.small}>
+                    {SUBJECT_LABEL[l.subject]} · {l.level} · {l.exercises.length} jeux
+                  </Body>
+                </View>
+                <Button label="Retirer" variant="ghost" onPress={() => removeLesson(l.id)} />
+              </View>
+            ))}
           </Card>
 
           <Card>
