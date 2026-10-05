@@ -43,7 +43,7 @@ function Root() {
           options={{
             presentation: 'modal',
             headerShown: true,
-            title: 'Dictée ou poésie',
+            title: 'Ajouter une leçon',
             headerStyle: { backgroundColor: univers.colors.card },
             headerTintColor: univers.colors.ink,
           }}

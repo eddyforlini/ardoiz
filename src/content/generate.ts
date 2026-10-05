@@ -145,14 +145,14 @@ export function wordsLesson(input: { title?: string; words: WordInput[]; level: 
 }
 
 /** Dernier mot d'un vers, sans la ponctuation */
-function lastWord(line: string): string {
+export function lastWord(line: string): string {
   const cleaned = line.replace(/[\s.,;:!?…»«"()\-—]+$/u, '');
   const parts = cleaned.split(/[\s'’]+/);
   return (parts[parts.length - 1] ?? '').replace(/^[«"(—-]+/u, '');
 }
 
 /** Fin sonore approximative d'un mot, pour repérer les rimes : dernière voyelle et ce qui suit */
-function rhymeKey(word: string): string {
+export function rhymeKey(word: string): string {
   let w = word.toLowerCase().replace(/[^a-zàâäéèêëîïôöùûüœç]/g, '');
   w = w.replace(/s$/, '').replace(/e$/, '');
   const m = w.match(new RegExp(`[${VOWELS}]+[^${VOWELS}]*$`));

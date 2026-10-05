@@ -7,6 +7,7 @@ import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } fr
 import { Gribouille } from '@/components/gribouille';
 import { Body, Button, Card, Chip, Screen } from '@/components/ui';
 import { poemLesson, wordsLesson } from '@/content/generate';
+import { analyseText, type Recognition } from '@/content/recognize';
 import { useLessons } from '@/content/LessonsProvider';
 import { searchPoems, type Poem } from '@/content/poems';
 import { LEVELS, type Level } from '@/content/types';
@@ -15,7 +16,7 @@ import { GAME_LABEL } from '@/games';
 import { useProfile } from '@/profile/ProfileProvider';
 import { useUnivers } from '@/univers/UniversProvider';
 
-type Mode = 'mots' | 'poesie';
+type Mode = 'mots' | 'poesie' | 'texte';
 
 /** Découpe ce que le parent a tapé : une ligne ou une virgule par mot */
 function parseWords(raw: string): string[] {
@@ -54,6 +55,11 @@ export default function AjouterScreen() {
   const [rawLines, setRawLines] = useState('');
   const lines = useMemo(() => rawLines.split('\n').map((l) => l.trim()).filter(Boolean), [rawLines]);
   const results = useMemo(() => (query.trim().length >= 2 ? searchPoems(query).slice(0, 6) : []), [query]);
+
+  // Texte collé ou dicté : la leçon, l'exercice, la page de calculs
+  const [textTitle, setTextTitle] = useState('');
+  const [rawText, setRawText] = useState('');
+  const recognition = useMemo<Recognition | null>(() => (rawText.trim().length >= 3 ? analyseText(rawText, level, textTitle) : null), [rawText, level, textTitle]);
 
   // Enregistrement de la voix du parent
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
@@ -106,9 +112,12 @@ export default function AjouterScreen() {
       if (words.length < 2) return null;
       return wordsLesson({ title: wordsTitle, words: words.map((word) => ({ word, audio: audios[word] })), level });
     }
+    if (mode === 'texte') {
+      return recognition && recognition.kind !== 'unknown' ? recognition.lesson : null;
+    }
     if (lines.length < 2) return null;
     return poemLesson({ title: poemTitle || 'Poésie', author: poemAuthor, lines, level });
-  }, [mode, words, wordsTitle, audios, lines, poemTitle, poemAuthor, level]);
+  }, [mode, words, wordsTitle, audios, lines, poemTitle, poemAuthor, level, recognition]);
 
   function pickPoem(p: Poem) {
     setPoemTitle(p.title);
@@ -119,7 +128,8 @@ export default function AjouterScreen() {
 
   function validate() {
     if (!lesson) return;
-    addLesson(lesson);
+    // Une leçon reconnue dans la banque existe déjà : on y va directement
+    if (!(mode === 'texte' && recognition?.kind === 'bank')) addLesson(lesson);
     router.replace(`/mission/${lesson.id}`);
   }
 
@@ -140,6 +150,7 @@ export default function AjouterScreen() {
             [
               ['mots', 'Mots de dictée'],
               ['poesie', 'Poésie'],
+              ['texte', 'Texte de la leçon'],
             ] as [Mode, string][]
           ).map(([m, label]) => (
             <Pressable
@@ -257,6 +268,46 @@ export default function AjouterScreen() {
               accessibilityLabel="Les vers de la poésie"
             />
             {lines.length > 0 && <Body muted>{lines.length} vers. Astuce : 8 à 12 vers par séance, le reste la fois d'après.</Body>}
+          </>
+        )}
+
+        {mode === 'texte' && (
+          <>
+            <Body muted>
+              Colle ou dicte le texte de la leçon, de l'exercice ou de la page de calculs. Je reconnais ce que c'est et je fabrique les jeux ici, sans rien envoyer.
+            </Body>
+            <TextInput value={textTitle} onChangeText={setTextTitle} placeholder="Titre (facultatif)" placeholderTextColor={c.soft} style={inputStyle} accessibilityLabel="Titre de la leçon" />
+            <TextInput
+              value={rawText}
+              onChangeText={setRawText}
+              placeholder={'Le texte de la leçon, les calculs, les vers...'}
+              placeholderTextColor={c.soft}
+              multiline
+              autoCorrect={false}
+              style={[...inputStyle, styles.multiline, styles.tall]}
+              accessibilityLabel="Texte de la leçon"
+            />
+            {recognition && (
+              <Card style={recognition.kind === 'unknown' ? { borderColor: c.sunDark, backgroundColor: c.sun } : undefined}>
+                <Body bold style={recognition.kind === 'unknown' ? { color: c.onSun } : undefined}>
+                  {recognition.why}
+                </Body>
+                {recognition.kind === 'unknown' && (
+                  <Body style={{ color: c.onSun }}>
+                    Essaie avec les mots de dictée ou la poésie, ou recopie seulement les calculs ou la liste de mots.
+                  </Body>
+                )}
+                {recognition.kind === 'unknown' && recognition.nearest.length > 0 && (
+                  <View style={styles.chips}>
+                    {recognition.nearest.map((l) => (
+                      <Pressable key={l.id} accessibilityRole="button" onPress={() => router.replace(`/mission/${l.id}`)}>
+                        <Chip>{l.title} ›</Chip>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </Card>
+            )}
           </>
         )}
 

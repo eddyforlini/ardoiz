@@ -48,7 +48,7 @@ export default function ParentScreen() {
             <Title size="md">Ajouter la leçon du soir</Title>
             <Body muted>La photo est lue puis oubliée. Les mots tapés et la poésie n'ont pas besoin d'internet.</Body>
             <Button label="📷 Photographier une leçon" variant="sun" onPress={() => router.push('/photo')} />
-            <Button label="✍️ Taper les mots ou la poésie" onPress={() => router.push('/ajouter')} />
+            <Button label="✍️ Taper ou coller le texte" onPress={() => router.push('/ajouter')} />
             <View style={styles.row}>
               <Body muted>Classe de l'enfant :</Body>
               <Link href="/niveau" asChild>

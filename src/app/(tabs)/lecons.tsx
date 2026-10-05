@@ -136,7 +136,7 @@ export default function LeconsScreen() {
                   : 'Photographie une leçon ou tape les mots de la dictée : la mission se range ici toute seule.'}
               </Body>
               <Button label="📷 Photographier une leçon" variant="sun" onPress={() => router.push('/photo')} />
-              <Button label="✍️ Taper les mots ou la poésie" variant="ghost" onPress={() => router.push('/ajouter')} />
+              <Button label="✍️ Taper ou coller le texte" variant="ghost" onPress={() => router.push('/ajouter')} />
             </Card>
           )}
 
@@ -188,7 +188,7 @@ export default function LeconsScreen() {
           {sections.length > 0 && (
             <View style={styles.actions}>
               <Button label="📷 Photographier une leçon" variant="ghost" onPress={() => router.push('/photo')} />
-              <Button label="✍️ Taper les mots ou la poésie" variant="ghost" onPress={() => router.push('/ajouter')} />
+              <Button label="✍️ Taper ou coller le texte" variant="ghost" onPress={() => router.push('/ajouter')} />
             </View>
           )}
         </ScrollView>
