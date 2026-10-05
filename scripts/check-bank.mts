@@ -27,7 +27,7 @@ function checkExercise(l: Lesson, e: Exercise) {
       break;
     case 'numberline':
       if (e.answer < e.min || e.answer > e.max) err(l, e, 'answer hors de la droite');
-      if ((e.answer - e.min) % e.step !== 0) err(l, e, 'answer pas sur une graduation');
+      if (Math.abs(Math.round((e.answer - e.min) / e.step) * e.step - (e.answer - e.min)) > 1e-9) err(l, e, 'answer pas sur une graduation');
       break;
     case 'scramble':
     case 'dictation':
