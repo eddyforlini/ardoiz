@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Gribouille } from '@/components/gribouille';
 import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
-import { LESSONS } from '@/content/bank-ce1';
+import { useLessons } from '@/content/LessonsProvider';
 import { SUBJECT_LABEL } from '@/content/types';
 import { useProfile } from '@/profile/ProfileProvider';
 import { PIEGES_ID, QUESTS, lessonHint, pickMission, stageFor } from '@/profile/progress';
@@ -23,7 +23,8 @@ export default function HomeScreen() {
   const ado = univers.tone === 'ado';
   const { level } = useProfile();
   const { progress } = useProgress();
-  const lessons = LESSONS.filter((l) => l.level === level);
+  const { lessons: allLessons } = useLessons();
+  const lessons = allLessons.filter((l) => l.level === level);
   const mission = pickMission(progress, lessons);
   const stage = stageFor(progress.xp);
   const ready = progress.mastery[SAMPLE.prochainControle.lessonId]?.best ?? 0;
