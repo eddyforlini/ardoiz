@@ -1,9 +1,12 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Gribouille } from '@/components/gribouille';
 import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
+import { LESSONS } from '@/content/bank-ce1';
+import { SUBJECT_LABEL } from '@/content/types';
+import { useProfile } from '@/profile/ProfileProvider';
 import { useUnivers } from '@/univers/UniversProvider';
 
 /**
@@ -14,13 +17,6 @@ const SAMPLE = {
   prenom: 'Léa',
   serie: 4,
   monnaie: 120,
-  mission: {
-    matiere: 'Maths',
-    notion: 'Les nombres jusqu\'à 100',
-    source: 'Leçon photographiée hier',
-    jeux: 4,
-    minutes: 6,
-  },
   prochainControle: { quoi: 'Dictée', dans: 3, pret: 70 },
   quetes: [
     { label: '5 bonnes réponses', fait: 3, total: 5 },
@@ -33,6 +29,9 @@ export default function HomeScreen() {
   const { univers } = useUnivers();
   const c = univers.colors;
   const ado = univers.tone === 'ado';
+  const { level } = useProfile();
+  const lessons = LESSONS.filter((l) => l.level === level);
+  const mission = lessons[0];
 
   return (
     <Screen>
@@ -43,6 +42,11 @@ export default function HomeScreen() {
               {univers.currencySymbol} {SAMPLE.monnaie} {univers.currency}
             </Chip>
             <Chip>🔥 {SAMPLE.serie} jours</Chip>
+            <Link href="/niveau" asChild>
+              <Pressable accessibilityRole="button" accessibilityLabel="Changer de niveau">
+                <Chip>{level} ▾</Chip>
+              </Pressable>
+            </Link>
             <Link href="/univers" asChild>
               <Pressable accessibilityRole="button" accessibilityLabel="Changer d'univers">
                 <Chip>{univers.name} ▾</Chip>
@@ -60,16 +64,29 @@ export default function HomeScreen() {
             </Card>
           </View>
 
-          <Card style={{ backgroundColor: c.primary, borderColor: c.primaryDark }}>
-            <Body style={{ color: c.onPrimary, opacity: 0.9 }}>{univers.words.mission}</Body>
-            <Title style={{ color: c.onPrimary }}>
-              {SAMPLE.mission.matiere} · {SAMPLE.mission.notion}
-            </Title>
-            <Body style={{ color: c.onPrimary, opacity: 0.9 }}>
-              {SAMPLE.mission.source} · {SAMPLE.mission.jeux} jeux · {SAMPLE.mission.minutes} min
-            </Body>
-            <Button label={ado ? 'Go' : 'C\'est parti !'} variant="sun" />
-          </Card>
+          {mission ? (
+            <Card style={{ backgroundColor: c.primary, borderColor: c.primaryDark }}>
+              <Body style={{ color: c.onPrimary, opacity: 0.9 }}>{univers.words.mission}</Body>
+              <Title style={{ color: c.onPrimary }}>
+                {SUBJECT_LABEL[mission.subject]} · {mission.title}
+              </Title>
+              <Body style={{ color: c.onPrimary, opacity: 0.9 }}>
+                {level} · {mission.exercises.length} jeux · {mission.minutes} min
+              </Body>
+              <Button label={ado ? 'Go' : 'C\'est parti !'} variant="sun" onPress={() => router.push(`/mission/${mission.id}`)} />
+            </Card>
+          ) : (
+            <Card style={{ backgroundColor: c.primary, borderColor: c.primaryDark }}>
+              <Body style={{ color: c.onPrimary, opacity: 0.9 }}>{univers.words.mission}</Body>
+              <Title style={{ color: c.onPrimary }}>Pas encore de leçon en {level}</Title>
+              <Body style={{ color: c.onPrimary, opacity: 0.9 }}>
+                Photographie une leçon pour créer la première mission, ou choisis un autre niveau.
+              </Body>
+              <Link href="/niveau" asChild>
+                <Button label="Changer de niveau" variant="sun" />
+              </Link>
+            </Card>
+          )}
 
           <Card>
             <View style={styles.row}>
@@ -101,8 +118,30 @@ export default function HomeScreen() {
             })}
           </Card>
 
+          <Card>
+            <Title size="md">Leçons à réviser en {level}</Title>
+            {lessons.length === 0 && <Body muted>Aucune leçon pour ce niveau pour le moment.</Body>}
+            {lessons.map((l) => (
+              <Pressable
+                key={l.id}
+                accessibilityRole="button"
+                onPress={() => router.push(`/mission/${l.id}`)}
+                style={({ pressed }) => [styles.lesson, { borderColor: c.line, opacity: pressed ? 0.7 : 1 }]}>
+                <View style={styles.bubble}>
+                  <Body bold>{l.title}</Body>
+                  <Body muted>
+                    {SUBJECT_LABEL[l.subject]} · {l.exercises.length} jeux · {l.minutes} min
+                  </Body>
+                </View>
+                <Body style={{ color: c.primary }} bold>
+                  ›
+                </Body>
+              </Pressable>
+            ))}
+          </Card>
+
           <Body muted style={styles.note}>
-            Données d'exemple. Les vraies missions arriveront avec la photo de la leçon.
+            Leçons d'exemple. Les vraies missions arriveront avec la photo de la leçon.
           </Body>
         </ScrollView>
       </SafeAreaView>
@@ -120,5 +159,6 @@ const styles = StyleSheet.create({
   bar: { height: 12, borderRadius: 999, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 999 },
   strike: { textDecorationLine: 'line-through' },
+  lesson: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderTopWidth: 1 },
   note: { textAlign: 'center', fontSize: 13 },
 });
