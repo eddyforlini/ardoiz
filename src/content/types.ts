@@ -8,7 +8,19 @@ export type Subject = 'maths' | 'francais';
 /** Type de page photographiée, qui décide des jeux proposés */
 export type SourceKind = 'poesie' | 'mots' | 'lecon' | 'calcul' | 'numeration' | 'grammaire';
 
-export type Level = 'CP' | 'CE1' | 'CE2' | 'CM1' | 'CM2';
+export type Level = 'CP' | 'CE1' | 'CE2' | 'CM1' | 'CM2' | '6e' | '5e' | '4e' | '3e';
+
+/** Tous les niveaux, dans l'ordre de l'école */
+export const LEVELS: Level[] = ['CP', 'CE1', 'CE2', 'CM1', 'CM2', '6e', '5e', '4e', '3e'];
+
+export const LEVEL_GROUPS: { label: string; levels: Level[] }[] = [
+  { label: 'École élémentaire', levels: ['CP', 'CE1', 'CE2', 'CM1', 'CM2'] },
+  { label: 'Collège', levels: ['6e', '5e', '4e', '3e'] },
+];
+
+export function isLevel(value: unknown): value is Level {
+  return typeof value === 'string' && (LEVELS as string[]).includes(value);
+}
 
 type Base = {
   id: string;

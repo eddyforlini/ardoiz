@@ -3,6 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { ProfileProvider } from '@/profile/ProfileProvider';
 import { UniversProvider, useUnivers } from '@/univers/UniversProvider';
 
 SplashScreen.preventAutoHideAsync();
@@ -35,6 +36,16 @@ function Root() {
             headerTintColor: univers.colors.ink,
           }}
         />
+        <Stack.Screen
+          name="niveau"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: 'Choisis ton niveau',
+            headerStyle: { backgroundColor: univers.colors.card },
+            headerTintColor: univers.colors.ink,
+          }}
+        />
       </Stack>
     </>
   );
@@ -43,7 +54,9 @@ function Root() {
 export default function RootLayout() {
   return (
     <UniversProvider>
-      <Root />
+      <ProfileProvider>
+        <Root />
+      </ProfileProvider>
     </UniversProvider>
   );
 }
