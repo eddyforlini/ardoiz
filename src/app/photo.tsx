@@ -3,9 +3,9 @@ import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Gribouille } from '@/components/gribouille';
+import { ParentGate } from '@/components/parent-gate';
 import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
 import { analysePhoto, serverReady, type AnalyseResult } from '@/content/api';
 import { useLessons } from '@/content/LessonsProvider';
@@ -73,10 +73,9 @@ export default function PhotoScreen() {
   }
 
   return (
-    <Screen>
-      <SafeAreaView style={styles.safe} edges={['top']}>
+    <ParentGate>
+      <Screen>
         <ScrollView contentContainerStyle={styles.content}>
-          <Title size="xl">Photo de la leçon</Title>
 
           {!serverReady && (
             <Card style={{ borderColor: c.sunDark, backgroundColor: c.sun }}>
@@ -102,7 +101,7 @@ export default function PhotoScreen() {
               <Button label="✍️ Taper les mots ou la poésie" onPress={() => router.push('/ajouter')} />
               <Card>
                 <Body muted>Pour une bonne lecture : page bien à plat, lumière du jour, toute la page dans le cadre.</Body>
-                <Body muted>Niveau en cours : {level}. Change-le sur l'accueil si besoin.</Body>
+                <Body muted>Niveau en cours : {level}. Change-le dans l'espace parent si besoin.</Body>
                 <Body muted>La photo est lue puis oubliée : elle n'est enregistrée nulle part.</Body>
               </Card>
             </>
@@ -180,8 +179,8 @@ export default function PhotoScreen() {
             </>
           )}
         </ScrollView>
-      </SafeAreaView>
-    </Screen>
+      </Screen>
+    </ParentGate>
   );
 }
 
@@ -194,7 +193,6 @@ function describe(e: { kind: string; [key: string]: unknown }): string {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
   content: { padding: 16, gap: 14, paddingBottom: 40 },
   hello: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   bubble: { flex: 1 },

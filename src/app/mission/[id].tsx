@@ -11,7 +11,7 @@ import { speak, stopSpeaking } from '@/content/speech';
 import type { Exercise, Lesson } from '@/content/types';
 import { SUBJECT_LABEL } from '@/content/types';
 import { GAME_LABEL, Game } from '@/games';
-import { COINS_PER_GOOD, PIEGES_ID, QUEST_REWARD, type MissionReward, type Progress } from '@/profile/progress';
+import { COINS_PER_GOOD, PIEGES_ID, QUEST_REWARD, missionReason, type MissionReward, type Progress } from '@/profile/progress';
 import { useProgress } from '@/profile/ProgressProvider';
 import { useUnivers } from '@/univers/UniversProvider';
 
@@ -159,6 +159,7 @@ export default function MissionScreen() {
                 </Pressable>
               </View>
             </Card>
+            <Body style={styles.centerText}>{missionReason(progress, lesson.id)}</Body>
             <Body muted style={styles.centerText}>
               {lesson.exercises.length} jeux · environ {lesson.minutes} min
             </Body>
