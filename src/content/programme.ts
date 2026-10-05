@@ -6,7 +6,7 @@ import type { Lesson, Level, Subject, Theme } from './types';
  * que personne ne montre : chaque leçon jouée se rattache à un attendu, et
  * le parent voit en une page où en est son enfant par rapport à l'école.
  *
- * CP et CE1 sont renseignés ; les autres niveaux suivront la même forme. Les formulations sont raccourcies pour tenir sur un téléphone.
+ * CP, CE1 et CE2 sont renseignés ; les autres niveaux suivront la même forme. Les formulations sont raccourcies pour tenir sur un téléphone.
  */
 export type Attendu = {
   id: string;
@@ -20,6 +20,35 @@ export type Attendu = {
 };
 
 export const PROGRAMME: Attendu[] = [
+  // CE2, maths
+  { id: 'ce2-nb-lire', level: 'CE2', subject: 'maths', theme: 'nombres', text: 'Lire, écrire, nommer et décomposer les nombres jusqu\'à 10 000.', keywords: /nombres? jusqu|10 ?000|dix mille|mille|unités de mille|décompos/i },
+  { id: 'ce2-nb-comparer', level: 'CE2', subject: 'maths', theme: 'nombres', text: 'Comparer, ranger, encadrer et placer les nombres jusqu\'à 10 000 sur une droite graduée.', keywords: /compar|ranger|encadr|droite graduée|ordre croissant|intercal/i },
+  { id: 'ce2-nb-fractions', level: 'CE2', subject: 'maths', theme: 'nombres', text: 'Comprendre les fractions simples : la moitié, le tiers, le quart, trois quarts.', keywords: /fraction|moitié|tiers|quart|demi/i },
+  { id: 'ce2-calc-add', level: 'CE2', subject: 'maths', theme: 'calcul', text: 'Additionner et soustraire des nombres jusqu\'à 10 000, en ligne et en colonnes, avec retenue.', keywords: /addition|soustraction|retenue|poser|somme|différence/i },
+  { id: 'ce2-calc-tables', level: 'CE2', subject: 'maths', theme: 'calcul', text: 'Connaître les tables de multiplication de 2 à 9 et multiplier par 10 et 100.', keywords: /table|multipli|fois|par 10|par 100/i },
+  { id: 'ce2-calc-multiplication', level: 'CE2', subject: 'maths', theme: 'calcul', text: 'Poser une multiplication à un chiffre, calculer le double, le triple, la moitié.', keywords: /multiplication posée|poser une multiplication|double|triple|moitié/i },
+  { id: 'ce2-calc-division', level: 'CE2', subject: 'maths', theme: 'calcul', text: 'Partager et grouper : approcher la division, avec ou sans reste.', keywords: /division|partag|group|reste|diviser/i },
+  { id: 'ce2-calc-problemes', level: 'CE2', subject: 'maths', theme: 'calcul', text: 'Résoudre des problèmes à deux étapes avec les quatre opérations.', keywords: /problème|énoncé|combien|étapes/i },
+  { id: 'ce2-gm-longueurs', level: 'CE2', subject: 'maths', theme: 'grandeurs', text: 'Mesurer et convertir des longueurs : millimètre, centimètre, mètre, kilomètre.', keywords: /longueur|millimètre|centimètre|mètre|kilomètre|convertir|mesur/i },
+  { id: 'ce2-gm-masses', level: 'CE2', subject: 'maths', theme: 'grandeurs', text: 'Mesurer des masses et des contenances : gramme, kilogramme, centilitre, litre.', keywords: /masse|gramme|kilo|contenance|litre|centilitre|balance/i },
+  { id: 'ce2-gm-heure', level: 'CE2', subject: 'maths', theme: 'grandeurs', text: 'Lire l\'heure à la minute près, calculer des durées, utiliser le calendrier.', keywords: /heure|durée|minute|seconde|calendrier|horloge/i },
+  { id: 'ce2-gm-monnaie', level: 'CE2', subject: 'maths', theme: 'grandeurs', text: 'Calculer avec la monnaie, euros et centimes, et rendre la monnaie.', keywords: /monnaie|euro|centime|prix|rendre/i },
+  { id: 'ce2-geo-figures', level: 'CE2', subject: 'maths', theme: 'geometrie', text: 'Décrire et tracer carré, rectangle, triangle rectangle et cercle ; reconnaître un angle droit.', keywords: /carré|rectangle|triangle|cercle|angle droit|polygone|côté|sommet|compas/i },
+  { id: 'ce2-geo-symetrie', level: 'CE2', subject: 'maths', theme: 'geometrie', text: 'Reconnaître et compléter une figure symétrique, tracer un axe de symétrie.', keywords: /symétri|axe|miroir|plier/i },
+  { id: 'ce2-geo-solides', level: 'CE2', subject: 'maths', theme: 'geometrie', text: 'Décrire cube, pavé, pyramide, cylindre : faces, arêtes, sommets ; se repérer sur un plan.', keywords: /cube|pavé|pyramide|cylindre|solide|arête|face|plan|repér/i },
+  // CE2, français
+  { id: 'ce2-lect-fluide', level: 'CE2', subject: 'francais', theme: 'lecture', text: 'Lire à voix haute avec fluidité et expression, en respectant la ponctuation et les liaisons.', keywords: /lire à voix|fluen|lecture à voix|ponctuation|liaison/i },
+  { id: 'ce2-lect-comprendre', level: 'CE2', subject: 'francais', theme: 'lecture', text: 'Comprendre un texte : personnages, lieux, chronologie, ce qui n\'est pas écrit mais qu\'on devine.', keywords: /compréhension|comprendre|texte|histoire|personnage|inférence/i },
+  { id: 'ce2-oral-memoriser', level: 'CE2', subject: 'francais', theme: 'poesie', text: 'Mémoriser et dire un poème avec expression, en respectant les vers et les rimes.', keywords: /poème|poésie|récit|mémoris|strophe|rime/i },
+  { id: 'ce2-ortho-mots', level: 'CE2', subject: 'francais', theme: 'orthographe', text: 'Orthographier les mots fréquents et les mots invariables, et les homophones a/à, et/est, on/ont, son/sont.', keywords: /mots? (de la semaine|invariable|fréquent)|dictée|orthograph|homophone|a\/à|et\/est|on\/ont|son\/sont/i },
+  { id: 'ce2-ortho-accords', level: 'CE2', subject: 'francais', theme: 'orthographe', text: 'Accorder dans le groupe nominal (genre et nombre, pluriels en -x) et le verbe avec son sujet.', keywords: /accord|pluriel|singulier|féminin|masculin|genre|nombre/i },
+  { id: 'ce2-ortho-lettres', level: 'CE2', subject: 'francais', theme: 'orthographe', text: 'Écrire les lettres muettes, le m devant m, b, p, et les valeurs des lettres c, g, s.', keywords: /lettre muette|lettre finale|devant m b p|\bc\b|\bg\b|\bs\b|valeur/i },
+  { id: 'ce2-gram-phrase', level: 'CE2', subject: 'francais', theme: 'grammaire', text: 'Reconnaître les types et formes de phrases, la ponctuation, et le groupe nominal.', keywords: /phrase|négati|interrogati|exclamati|ponctuation|groupe nominal/i },
+  { id: 'ce2-gram-fonctions', level: 'CE2', subject: 'francais', theme: 'grammaire', text: 'Identifier le sujet, le verbe et les compléments ; reconnaître le nom, le déterminant, l\'adjectif, le pronom.', keywords: /sujet|verbe|complément|\bnom\b|déterminant|adjectif|pronom|fonction/i },
+  { id: 'ce2-conj-present', level: 'CE2', subject: 'francais', theme: 'conjugaison', text: 'Conjuguer au présent les verbes en -er, -ir (finir), être, avoir, aller, faire, dire, venir, pouvoir, vouloir, prendre.', keywords: /présent|conjug|finir|pouvoir|vouloir|prendre/i },
+  { id: 'ce2-conj-passe', level: 'CE2', subject: 'francais', theme: 'conjugaison', text: 'Conjuguer à l\'imparfait, au futur et au passé composé les verbes fréquents.', keywords: /imparfait|futur|passé composé|auxiliaire|participe/i },
+  { id: 'ce2-voc-sens', level: 'CE2', subject: 'francais', theme: 'vocabulaire', text: 'Utiliser synonymes, contraires, familles de mots, préfixes et suffixes, sens propre et sens figuré.', keywords: /synonyme|contraire|famille de mots|préfixe|suffixe|sens propre|sens figuré|polysém/i },
+  { id: 'ce2-voc-dictionnaire', level: 'CE2', subject: 'francais', theme: 'vocabulaire', text: 'Chercher un mot dans le dictionnaire et comprendre un article : nature, définitions, exemples.', keywords: /alphab|dictionnaire|définition|article/i },
   // CP, maths
   { id: 'cp-nb-lire', level: 'CP', subject: 'maths', theme: 'nombres', text: 'Lire, écrire et nommer les nombres jusqu\'à 100.', keywords: /nombres? jusqu|lire les nombres|écrire les nombres|cent\b/i },
   { id: 'cp-nb-denombrer', level: 'CP', subject: 'maths', theme: 'nombres', text: 'Dénombrer une collection, comparer et ranger des nombres jusqu\'à 100.', keywords: /compt|dénombr|compar|ranger|plus grand|plus petit/i },
@@ -44,7 +73,7 @@ export const PROGRAMME: Attendu[] = [
   { id: 'cp-conj-present', level: 'CP', subject: 'francais', theme: 'conjugaison', text: 'Comprendre que le verbe change avec je, tu, il ; utiliser être et avoir à l\'oral et à l\'écrit.', keywords: /conjug|présent|je|tu|il|être|avoir/i },
   { id: 'cp-voc-mots', level: 'CP', subject: 'francais', theme: 'vocabulaire', text: 'Ranger des mots par catégorie, trouver des contraires simples, utiliser le vocabulaire de l\'école et de la maison.', keywords: /vocab|catégorie|contraire|famille|mots de/i },
   { id: 'cp-voc-alphabet', level: 'CP', subject: 'francais', theme: 'vocabulaire', text: 'Connaître l\'alphabet dans l\'ordre, en lettres majuscules et minuscules.', keywords: /alphab|majuscule|minuscule|lettres/i },
-  // Maths, nombres
+  // CE1, maths
   { id: 'ce1-nb-lire', level: 'CE1', subject: 'maths', theme: 'nombres', text: 'Lire, écrire et nommer les nombres jusqu\'à 1 000.', keywords: /nombres? jusqu|lire les nombres|écrire les nombres|mille|1 ?000/i },
   { id: 'ce1-nb-comparer', level: 'CE1', subject: 'maths', theme: 'nombres', text: 'Comparer, ranger et encadrer les nombres ; les placer sur une droite graduée.', keywords: /compar|ranger|encadr|droite graduée|ordre croissant/i },
   { id: 'ce1-nb-dizaines', level: 'CE1', subject: 'maths', theme: 'nombres', text: 'Comprendre les dizaines, les centaines et les unités, et décomposer un nombre.', keywords: /dizaine|centaine|unité|décompos|numération/i },
@@ -62,7 +91,7 @@ export const PROGRAMME: Attendu[] = [
   { id: 'ce1-geo-figures', level: 'CE1', subject: 'maths', theme: 'geometrie', text: 'Reconnaître et décrire le carré, le rectangle, le triangle et le cercle.', keywords: /carré|rectangle|triangle|cercle|figure|polygone|côté|sommet/i },
   { id: 'ce1-geo-tracer', level: 'CE1', subject: 'maths', theme: 'geometrie', text: 'Tracer avec la règle et l\'équerre, repérer un angle droit, reproduire sur quadrillage.', keywords: /tracer|équerre|angle droit|quadrillage|reproduire|segment/i },
   { id: 'ce1-geo-solides', level: 'CE1', subject: 'maths', theme: 'geometrie', text: 'Reconnaître le cube, le pavé, la boule, et se repérer dans l\'espace.', keywords: /cube|pavé|boule|solide|repér|plan|droite|gauche/i },
-  // Français, lecture et oral
+  // CE1, français
   { id: 'ce1-lect-fluide', level: 'CE1', subject: 'francais', theme: 'lecture', text: 'Lire à voix haute un texte adapté de façon fluide, en respectant la ponctuation.', keywords: /lire à voix|fluen|lecture à voix|ponctuation/i },
   { id: 'ce1-lect-comprendre', level: 'CE1', subject: 'francais', theme: 'lecture', text: 'Comprendre un texte lu seul : personnages, lieux, ordre des événements.', keywords: /compréhension|comprendre|texte|histoire|personnage/i },
   { id: 'ce1-oral-memoriser', level: 'CE1', subject: 'francais', theme: 'poesie', text: 'Mémoriser et réciter un poème ou un texte court avec expression.', keywords: /poème|poésie|récit|mémoris/i },
