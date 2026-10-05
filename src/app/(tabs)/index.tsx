@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Gribouille } from '@/components/gribouille';
 import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
 import { useLessons } from '@/content/LessonsProvider';
-import { SUBJECT_LABEL } from '@/content/types';
+import { SUBJECT_LABEL, themeLabel, themeOf } from '@/content/types';
 import { useProfile } from '@/profile/ProfileProvider';
 import { PIEGES_ID, QUESTS, lessonHint, pickMission, stageFor } from '@/profile/progress';
 import { useProgress } from '@/profile/ProgressProvider';
@@ -26,6 +26,17 @@ export default function HomeScreen() {
   const { lessons: allLessons } = useLessons();
   const lessons = allLessons.filter((l) => l.level === level);
   const mission = pickMission(progress, lessons);
+  // Les trois leçons les plus pressées : celles à revoir d'abord, puis les jamais jouées
+  const toReview = [...lessons]
+    .sort((a, b) => {
+      const ma = progress.mastery[a.id];
+      const mb = progress.mastery[b.id];
+      if (ma && mb) return ma.due.localeCompare(mb.due);
+      if (ma) return -1;
+      if (mb) return 1;
+      return 0;
+    })
+    .slice(0, 3);
   const stage = stageFor(progress.xp);
   const ready = progress.mastery[SAMPLE.prochainControle.lessonId]?.best ?? 0;
   const pieges = Object.keys(progress.errors).length;
@@ -151,9 +162,14 @@ export default function HomeScreen() {
           </Card>
 
           <Card>
-            <Title size="md">Leçons à réviser en {level}</Title>
+            <View style={styles.row}>
+              <Title size="md">À réviser en {level}</Title>
+              <Pressable accessibilityRole="button" accessibilityLabel="Voir toutes les leçons" onPress={() => router.push('/lecons')}>
+                <Chip>Toutes ›</Chip>
+              </Pressable>
+            </View>
             {lessons.length === 0 && <Body muted>Aucune leçon pour ce niveau pour le moment.</Body>}
-            {lessons.map((l) => (
+            {toReview.map((l) => (
               <Pressable
                 key={l.id}
                 accessibilityRole="button"
@@ -162,7 +178,7 @@ export default function HomeScreen() {
                 <View style={styles.bubble}>
                   <Body bold>{l.title}</Body>
                   <Body muted>
-                    {SUBJECT_LABEL[l.subject]} · {l.exercises.length} jeux · {l.minutes} min
+                    {SUBJECT_LABEL[l.subject]} · {themeLabel(l.subject, themeOf(l)).label} · {l.minutes} min
                   </Body>
                   {lessonHint(progress, l.id) && (
                     <Body style={{ color: c.primary, fontSize: 13 }} bold>
@@ -175,10 +191,13 @@ export default function HomeScreen() {
                 </Body>
               </Pressable>
             ))}
+            {lessons.length > toReview.length && (
+              <Button label={`Les ${lessons.length} leçons de ${level}`} variant="ghost" onPress={() => router.push('/lecons')} />
+            )}
           </Card>
 
           <Body muted style={styles.note}>
-            Leçons d'exemple. Les vraies missions arriveront avec la photo de la leçon.
+            Ajoute les vraies leçons de la semaine depuis l'onglet Photo.
           </Body>
         </ScrollView>
       </SafeAreaView>

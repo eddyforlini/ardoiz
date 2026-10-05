@@ -5,9 +5,10 @@ import { useUnivers } from '@/univers/UniversProvider';
 
 type TabDef = { name: string; title: string; glyph: string };
 
-/** Cinq onglets, comme le prototype. Les glyphes sont provisoires. */
+/** Six onglets. Les glyphes sont provisoires. */
 const TABS: TabDef[] = [
   { name: 'index', title: 'Accueil', glyph: '⌂' },
+  { name: 'lecons', title: 'Leçons', glyph: '▤' },
   { name: 'photo', title: 'Photo', glyph: '◎' },
   { name: 'monde', title: 'Monde', glyph: '⚑' },
   { name: 'recompenses', title: 'Récompenses', glyph: '★' },
