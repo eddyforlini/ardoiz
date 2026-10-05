@@ -23,10 +23,12 @@ export function NumberlineGame({ exercise, onAnswer, done }: GameProps<Numberlin
   const c = univers.colors;
   const [picked, setPicked] = useState<number | null>(null);
 
-  const ticks: number[] = [];
-  for (let v = exercise.min; v <= exercise.max; v += exercise.step) ticks.push(v);
-  const count = ticks.length;
+  // Graduations calculées par index, pour que 0,1 + 0,1 + 0,1 fasse bien 0,3 (nombres décimaux du CM1)
+  const decimals = (String(exercise.step).split('.')[1] ?? '').length;
+  const count = Math.round((exercise.max - exercise.min) / exercise.step) + 1;
+  const ticks = Array.from({ length: count }, (_, i) => Number((exercise.min + i * exercise.step).toFixed(decimals)));
   const landerIndex = picked === null ? 0 : ticks.indexOf(picked);
+  const show = (v: number) => String(v).replace('.', ',');
 
   return (
     <View style={styles.wrap}>
@@ -44,7 +46,7 @@ export function NumberlineGame({ exercise, onAnswer, done }: GameProps<Numberlin
               <View key={v} style={styles.tickCol}>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Graduation ${v}`}
+                  accessibilityLabel={`Graduation ${show(v)}`}
                   disabled={done}
                   onPress={() => {
                     setPicked(v);
@@ -53,7 +55,7 @@ export function NumberlineGame({ exercise, onAnswer, done }: GameProps<Numberlin
                   style={[styles.tick, { backgroundColor: bg, borderColor: border }]}
                 />
                 <Text style={[styles.label, { color: c.ink, fontWeight: univers.font.weight }]}>
-                  {v % (exercise.step * 2) === 0 || count <= 6 ? v : ''}
+                  {ticks.indexOf(v) % 2 === 0 || count <= 6 ? show(v) : ''}
                 </Text>
               </View>
             );
