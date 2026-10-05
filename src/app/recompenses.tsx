@@ -1,5 +1,4 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Gribouille } from '@/components/gribouille';
 import { Body, Card, Chip, Screen, Title } from '@/components/ui';
@@ -17,9 +16,7 @@ export default function RecompensesScreen() {
 
   return (
     <Screen>
-      <SafeAreaView style={styles.safe} edges={['top']}>
-        <ScrollView contentContainerStyle={styles.content}>
-          <Title size="xl">Récompenses</Title>
+      <ScrollView contentContainerStyle={styles.content}>
 
           <Card style={styles.hero}>
             <Gribouille size={90} mood={stage.index >= 2 ? 'fier' : 'content'} />
@@ -101,14 +98,12 @@ export default function RecompensesScreen() {
               </View>
             ))}
           </Card>
-        </ScrollView>
-      </SafeAreaView>
+      </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
   content: { padding: 16, gap: 14, paddingBottom: 40 },
   hero: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   heroText: { flex: 1, gap: 4 },

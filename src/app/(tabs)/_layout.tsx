@@ -5,14 +5,15 @@ import { useUnivers } from '@/univers/UniversProvider';
 
 type TabDef = { name: string; title: string; glyph: string };
 
-/** Six onglets. Les glyphes sont provisoires. */
+/**
+ * Trois onglets pour l'enfant, comme chez Khan Kids ou Smartick : jouer,
+ * son monde, ses leçons. La photo et l'espace parent sont derrière un
+ * verrou, hors de la barre. Les glyphes sont provisoires.
+ */
 const TABS: TabDef[] = [
-  { name: 'index', title: 'Accueil', glyph: '⌂' },
-  { name: 'lecons', title: 'Leçons', glyph: '▤' },
-  { name: 'photo', title: 'Photo', glyph: '◎' },
-  { name: 'monde', title: 'Monde', glyph: '⚑' },
-  { name: 'recompenses', title: 'Récompenses', glyph: '★' },
-  { name: 'parent', title: 'Parent', glyph: '☺' },
+  { name: 'index', title: 'Jouer', glyph: '▶' },
+  { name: 'monde', title: 'Mon monde', glyph: '⚑' },
+  { name: 'lecons', title: 'Mes leçons', glyph: '▤' },
 ];
 
 export default function TabsLayout() {

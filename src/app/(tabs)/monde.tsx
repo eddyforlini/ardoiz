@@ -1,9 +1,10 @@
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Gribouille } from '@/components/gribouille';
-import { Body, Card, Chip, Screen, Title } from '@/components/ui';
+import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
 import { PLOTS, missionsDone, plotStatus, stageFor } from '@/profile/progress';
 import { useProgress } from '@/profile/ProgressProvider';
 import { useUnivers } from '@/univers/UniversProvider';
@@ -98,6 +99,8 @@ export default function MondeScreen() {
               );
             })}
           </Card>
+
+          <Button label="⭐ Mes autocollants et ma série" variant="ghost" onPress={() => router.push('/recompenses')} />
 
           <Body muted style={styles.note}>
             Le Codex des notions et les événements de saison arriveront ensuite.

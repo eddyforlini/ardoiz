@@ -324,3 +324,19 @@ export function lessonHint(p: Progress, lessonId: string, today = dayKey()): str
   const d = daysBetween(today, m.due);
   return `Maîtrise ${m.best} % · retour dans ${d} jour${d > 1 ? 's' : ''}`;
 }
+
+/**
+ * Pourquoi Gribouille propose cette mission, dit à l'enfant. La révision
+ * espacée est fondue dans le jeu plutôt que cachée dans un onglet.
+ */
+export function missionReason(p: Progress, lessonId: string, today = dayKey()): string {
+  const m = p.mastery[lessonId];
+  if (!m) return 'Une nouvelle leçon à découvrir.';
+  const since = daysBetween(m.lastDay, today);
+  if (m.due <= today) {
+    if (since <= 0) return 'Tu l\'as vue aujourd\'hui, on la refait pour la garder.';
+    if (since === 1) return 'Tu l\'as vue hier, on vérifie que ça tient !';
+    return `Tu l'as vue il y a ${since} jours, on vérifie que ça tient !`;
+  }
+  return m.best >= 80 ? 'Tu la connais bien, on s\'entraîne encore un peu.' : 'On la retravaille ensemble.';
+}

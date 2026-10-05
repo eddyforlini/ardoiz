@@ -1,7 +1,8 @@
+import { Link, router } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ParentGate } from '@/components/parent-gate';
 import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
 import { useLessons } from '@/content/LessonsProvider';
 import { SUBJECT_LABEL, type Lesson } from '@/content/types';
@@ -23,7 +24,11 @@ function describe(exerciseId: string, all: Lesson[]): { title: string; lesson: s
   return null;
 }
 
-/** Espace parent : où en est l'enfant, ses pièges, et les réglages. Les comptes viendront avec Supabase. */
+/**
+ * Espace parent, derrière un petit calcul : ajouter une leçon, choisir le
+ * niveau, voir où en est l'enfant, ses pièges, et les réglages. Les comptes
+ * viendront avec Supabase.
+ */
 export default function ParentScreen() {
   const { univers } = useUnivers();
   const c = univers.colors;
@@ -36,10 +41,21 @@ export default function ParentScreen() {
   const avg = lessonsPlayed ? Math.round(Object.values(progress.mastery).reduce((n, m) => n + m.best, 0) / lessonsPlayed) : 0;
 
   return (
-    <Screen>
-      <SafeAreaView style={styles.safe} edges={['top']}>
+    <ParentGate>
+      <Screen>
         <ScrollView contentContainerStyle={styles.content}>
-          <Title size="xl">Espace parent</Title>
+          <Card>
+            <Title size="md">Ajouter la leçon du soir</Title>
+            <Body muted>La photo est lue puis oubliée. Les mots tapés et la poésie n'ont pas besoin d'internet.</Body>
+            <Button label="📷 Photographier une leçon" variant="sun" onPress={() => router.push('/photo')} />
+            <Button label="✍️ Taper les mots ou la poésie" onPress={() => router.push('/ajouter')} />
+            <View style={styles.row}>
+              <Body muted>Classe de l'enfant :</Body>
+              <Link href="/niveau" asChild>
+                <Button label={`${level} ▾`} variant="ghost" />
+              </Link>
+            </View>
+          </Card>
 
           <Card>
             <Title size="md">Cette semaine</Title>
@@ -104,7 +120,7 @@ export default function ParentScreen() {
 
           <Card>
             <Title size="md">Leçons photographiées · {custom.length}</Title>
-            {custom.length === 0 && <Body muted>Les leçons créées depuis l'onglet Photo apparaîtront ici.</Body>}
+            {custom.length === 0 && <Body muted>Les leçons photographiées ou tapées apparaîtront ici.</Body>}
             {custom.map((l) => (
               <View key={l.id} style={[styles.line, { borderColor: c.line }]}>
                 <View style={styles.grow}>
@@ -136,13 +152,12 @@ export default function ParentScreen() {
             )}
           </Card>
         </ScrollView>
-      </SafeAreaView>
-    </Screen>
+      </Screen>
+    </ParentGate>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
   content: { padding: 16, gap: 14, paddingBottom: 40 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' },
   line: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderTopWidth: 1 },

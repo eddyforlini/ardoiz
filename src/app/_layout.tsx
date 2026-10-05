@@ -49,6 +49,33 @@ function Root() {
           }}
         />
         <Stack.Screen
+          name="parent"
+          options={{
+            headerShown: true,
+            title: 'Espace parent',
+            headerStyle: { backgroundColor: univers.colors.card },
+            headerTintColor: univers.colors.ink,
+          }}
+        />
+        <Stack.Screen
+          name="photo"
+          options={{
+            headerShown: true,
+            title: 'Photo de la leçon',
+            headerStyle: { backgroundColor: univers.colors.card },
+            headerTintColor: univers.colors.ink,
+          }}
+        />
+        <Stack.Screen
+          name="recompenses"
+          options={{
+            headerShown: true,
+            title: 'Mes récompenses',
+            headerStyle: { backgroundColor: univers.colors.card },
+            headerTintColor: univers.colors.ink,
+          }}
+        />
+        <Stack.Screen
           name="niveau"
           options={{
             presentation: 'modal',
