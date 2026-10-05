@@ -13,6 +13,7 @@ Une étape = une branche et une PR, essayée sur téléphone avec Expo Go avant 
 | 3d. Accueil enfant | Un seul bouton Jouer, trois onglets enfant, photo et espace parent derrière un petit calcul, mission qui dit pourquoi elle revient | En cours (PR 9) |
 | 3e. Trois jeux de plus | Carte mémoire auto-évaluée (récitation, tables), paires chrono avec record personnel, dizaines et unités à manipuler : 18 jeux | En cours (PR 10) |
 | 3f. Programme et trois états | Attendus officiels de fin de CE1 (27) dans `src/content/programme.ts`, écran Programme avec l'état de chaque attendu, états ○ ◐ ● partout à la place des pourcentages | En cours (PR 11) |
+| 3g. Banque CE1 | 34 leçons, 323 exercices, un fichier par matière (`bank-ce1-maths.ts`, `bank-ce1-francais.ts`), les 27 attendus couverts, script `scripts/check-bank.mts` | En cours (PR 12) |
 | 3b. Comptes | Compte parent Supabase, plusieurs enfants, progrès synchronisés | À faire |
 | 4. Voix | Réciter, épeler, lire à voix haute, Ardoiz qui parle | À faire |
 | 5. Motivation | Progrès enregistrés, révision espacée, série, quêtes du jour, coffres et autocollants, monde à construire, Gribouille qui évolue | En cours (PR 4) |

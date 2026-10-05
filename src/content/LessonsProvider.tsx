@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-import { LESSONS } from './bank-ce1';
+import { LESSONS } from './bank';
 import type { Lesson } from './types';
 
 const STORAGE_KEY = 'ardoiz.lessons';
