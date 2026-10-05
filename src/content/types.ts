@@ -22,6 +22,43 @@ export function isLevel(value: unknown): value is Level {
   return typeof value === 'string' && (LEVELS as string[]).includes(value);
 }
 
+/** Thème : le rayon de la bibliothèque où le parent retrouve la leçon */
+export type Theme =
+  | 'nombres'
+  | 'calcul'
+  | 'grandeurs'
+  | 'geometrie'
+  | 'orthographe'
+  | 'grammaire'
+  | 'conjugaison'
+  | 'vocabulaire'
+  | 'lecture'
+  | 'poesie'
+  | 'autre';
+
+export const THEMES: Record<Subject, { id: Theme; label: string; emoji: string }[]> = {
+  maths: [
+    { id: 'nombres', label: 'Nombres', emoji: '🔢' },
+    { id: 'calcul', label: 'Calcul', emoji: '➕' },
+    { id: 'grandeurs', label: 'Grandeurs et mesures', emoji: '📏' },
+    { id: 'geometrie', label: 'Géométrie', emoji: '📐' },
+    { id: 'autre', label: 'Autres leçons', emoji: '📘' },
+  ],
+  francais: [
+    { id: 'orthographe', label: 'Orthographe et dictée', emoji: '✏️' },
+    { id: 'grammaire', label: 'Grammaire', emoji: '🧩' },
+    { id: 'conjugaison', label: 'Conjugaison', emoji: '⏳' },
+    { id: 'vocabulaire', label: 'Vocabulaire', emoji: '💬' },
+    { id: 'lecture', label: 'Lecture', emoji: '📖' },
+    { id: 'poesie', label: 'Poésie', emoji: '🎭' },
+    { id: 'autre', label: 'Autres leçons', emoji: '📕' },
+  ],
+};
+
+export function themeLabel(subject: Subject, theme: Theme) {
+  return THEMES[subject].find((t) => t.id === theme) ?? THEMES[subject][THEMES[subject].length - 1];
+}
+
 type Base = {
   id: string;
   /** Explication courte montrée après une erreur */
@@ -189,6 +226,8 @@ export type Lesson = {
   level: Level;
   /** Notion rattachée au programme */
   notion: string;
+  /** Rayon de la bibliothèque ; déduit de la source et de la notion s'il manque (voir themeOf) */
+  theme?: Theme;
   /** Attendu officiel du programme, cité tel quel */
   attendu?: string;
   /** Pour l'écran de découverte : la leçon en quelques lignes */
@@ -212,3 +251,23 @@ export const SOURCE_LABEL: Record<SourceKind, string> = {
   grammaire: 'Grammaire',
   lecture: 'Lecture',
 };
+
+/** Trouve le thème d'une leçon, même ancienne ou venue de la photo sans thème explicite */
+export function themeOf(l: Lesson): Theme {
+  if (l.theme) return l.theme;
+  const n = `${l.notion} ${l.title}`.toLowerCase();
+  if (l.subject === 'maths') {
+    if (l.source === 'calcul' || /calcul|addition|soustraction|multiplication|table|division/.test(n)) return 'calcul';
+    if (/géom|figure|droite|angle|carré|triangle|symétrie|solide/.test(n)) return 'geometrie';
+    if (/mesur|longueur|masse|heure|monnaie|grandeur|durée|litre/.test(n)) return 'grandeurs';
+    if (l.source === 'numeration' || /nombre|numération|compar|ranger|dizaine|unité|fraction|décimal/.test(n)) return 'nombres';
+    return 'autre';
+  }
+  if (l.source === 'poesie' || /poème|poésie|réciter/.test(n)) return 'poesie';
+  if (l.source === 'mots' || /orthograph|dictée|mots invariables|accord/.test(n)) return 'orthographe';
+  if (/conjug|présent|futur|imparfait|passé composé|temps du verbe/.test(n)) return 'conjugaison';
+  if (l.source === 'grammaire' || /gramm|verbe|sujet|nom|adjectif|phrase|déterminant|pronom/.test(n)) return 'grammaire';
+  if (/vocab|synonyme|contraire|famille de mots|sens/.test(n)) return 'vocabulaire';
+  if (l.source === 'lecture' || /lecture|lire|texte|compréhension/.test(n)) return 'lecture';
+  return 'autre';
+}

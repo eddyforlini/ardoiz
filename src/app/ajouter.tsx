@@ -9,6 +9,7 @@ import { Body, Button, Card, Chip, Screen } from '@/components/ui';
 import { poemLesson, wordsLesson } from '@/content/generate';
 import { useLessons } from '@/content/LessonsProvider';
 import { searchPoems, type Poem } from '@/content/poems';
+import { LEVELS, type Level } from '@/content/types';
 import { sayWord } from '@/content/speech';
 import { GAME_LABEL } from '@/games';
 import { useProfile } from '@/profile/ProfileProvider';
@@ -35,9 +36,10 @@ const canRecord = Platform.OS !== 'web';
 export default function AjouterScreen() {
   const { univers } = useUnivers();
   const c = univers.colors;
-  const { level } = useProfile();
+  const { level: profileLevel } = useProfile();
   const { addLesson } = useLessons();
   const [mode, setMode] = useState<Mode>('mots');
+  const [level, setLevel] = useState<Level>(profileLevel);
 
   // Mots
   const [wordsTitle, setWordsTitle] = useState('');
@@ -150,6 +152,23 @@ export default function AjouterScreen() {
             </Pressable>
           ))}
         </View>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.levels}>
+          {LEVELS.map((lv) => {
+            const selected = lv === level;
+            return (
+              <Pressable
+                key={lv}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                accessibilityLabel={`Niveau ${lv}`}
+                onPress={() => setLevel(lv)}
+                style={[styles.level, { borderColor: selected ? c.primary : c.line, backgroundColor: selected ? c.primary : c.card, borderRadius: univers.font.radius }]}>
+                <Body bold style={{ color: selected ? c.onPrimary : c.soft }}>{lv}</Body>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
 
         {mode === 'mots' && (
           <>
@@ -266,6 +285,8 @@ const styles = StyleSheet.create({
   hello: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   bubble: { flex: 1 },
   modes: { flexDirection: 'row', gap: 8 },
+  levels: { gap: 6, paddingVertical: 2 },
+  level: { minWidth: 52, alignItems: 'center', borderWidth: 2, paddingVertical: 6, paddingHorizontal: 8 },
   modeBtn: { flex: 1, borderWidth: 2, paddingVertical: 10, alignItems: 'center' },
   input: { borderWidth: 2, paddingVertical: 10, paddingHorizontal: 14, fontSize: 16 },
   multiline: { minHeight: 110, textAlignVertical: 'top' },
