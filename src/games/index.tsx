@@ -3,6 +3,7 @@ import { BlanksGame } from './blanks';
 import { ChoiceGame } from './choice';
 import { CountGame } from './count';
 import { DictationGame } from './dictation';
+import { FixGame } from './fix';
 import { FlashGame } from './flash';
 import { NumberlineGame } from './numberline';
 import { OrderGame } from './order';
@@ -47,6 +48,8 @@ export function Game(props: GameProps<Exercise>) {
       return <CountGame {...props} exercise={exercise} />;
     case 'pairs':
       return <PairsGame {...props} exercise={exercise} />;
+    case 'fix':
+      return <FixGame {...props} exercise={exercise} />;
   }
 }
 
@@ -66,4 +69,5 @@ export const GAME_LABEL: Record<Exercise['kind'], string> = {
   dictation: 'Dictée',
   count: 'Compte les objets',
   pairs: 'Memory',
+  fix: 'Corrige Gribouille',
 };

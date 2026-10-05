@@ -7,7 +7,7 @@ import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
 import { LESSONS } from '@/content/bank-ce1';
 import { SUBJECT_LABEL } from '@/content/types';
 import { useProfile } from '@/profile/ProfileProvider';
-import { QUESTS, lessonHint, pickMission, stageFor } from '@/profile/progress';
+import { PIEGES_ID, QUESTS, lessonHint, pickMission, stageFor } from '@/profile/progress';
 import { useProgress } from '@/profile/ProgressProvider';
 import { useUnivers } from '@/univers/UniversProvider';
 
@@ -27,6 +27,7 @@ export default function HomeScreen() {
   const mission = pickMission(progress, lessons);
   const stage = stageFor(progress.xp);
   const ready = progress.mastery[SAMPLE.prochainControle.lessonId]?.best ?? 0;
+  const pieges = Object.keys(progress.errors).length;
   const missionDone = mission && progress.mastery[mission.id] && progress.mastery[mission.id].lastDay === progress.today.day && progress.today.missions > 0;
 
   return (
@@ -112,6 +113,22 @@ export default function HomeScreen() {
                   : 'Prête ! Une dernière révision la veille et c\'est gagné.'}
             </Body>
           </Card>
+
+          {pieges > 0 && (
+            <Card style={{ borderColor: c.sunDark, backgroundColor: c.sun }}>
+              <View style={styles.row}>
+                <View style={styles.bubble}>
+                  <Title size="md" style={{ color: c.onSun }}>
+                    Mes pièges
+                  </Title>
+                  <Body style={{ color: c.onSun }}>
+                    {pieges} question{pieges > 1 ? 's' : ''} t'{pieges > 1 ? 'ont' : 'a'} piégé. Déjoue-{pieges > 1 ? 'les' : 'la'} deux fois pour {pieges > 1 ? 'les' : 'la'} faire disparaître.
+                  </Body>
+                </View>
+                <Button label="Déjouer" variant="primary" onPress={() => router.push(`/mission/${PIEGES_ID}`)} />
+              </View>
+            </Card>
+          )}
 
           <Card>
             <Title size="md">Quêtes du jour</Title>

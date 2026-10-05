@@ -146,7 +146,21 @@ export type PairsExercise = Base & {
   pairs: { a: string; b: string }[];
 };
 
+/** Corrige Gribouille : il a écrit une bêtise, on touche le mot faux puis on choisit la correction */
+export type FixExercise = Base & {
+  kind: 'fix';
+  prompt: string;
+  /** Ce que Gribouille a écrit, mot par mot, avec l'erreur dedans */
+  words: string[];
+  /** Index du mot faux */
+  wrongIndex: number;
+  /** Corrections proposées, la bonne est `correct` */
+  correct: string;
+  distractors: string[];
+};
+
 export type Exercise =
+  | FixExercise
   | ChoiceExercise
   | TrueFalseExercise
   | SortExercise

@@ -15,6 +15,9 @@ export type Mastery = {
   due: string;
 };
 
+/** Un exercice raté au premier essai, à retravailler. Il disparaît après deux réussites. */
+export type ErrorEntry = { lessonId: string; count: number; fixed: number; lastDay: string };
+
 export type Progress = {
   coins: number;
   xp: number;
@@ -22,6 +25,7 @@ export type Progress = {
   mastery: Record<string, Mastery>;
   stickers: string[];
   plots: Partial<Record<UniversId, number[]>>;
+  errors: Record<string, ErrorEntry>;
   today: { day: string; good: number; missions: number; kinds: string[]; claimed: string[] };
 };
 
@@ -32,8 +36,13 @@ export const EMPTY_PROGRESS: Progress = {
   mastery: {},
   stickers: [],
   plots: {},
+  errors: {},
   today: { day: '', good: 0, missions: 0, kinds: [], claimed: [] },
 };
+
+/** Identifiant de la mission faite des erreurs de l'enfant */
+export const PIEGES_ID = 'mes-pieges';
+export const PIEGES_FIXED_NEEDED = 2;
 
 export const COINS_PER_GOOD = 10;
 export const COINS_PERFECT = 20;
@@ -196,6 +205,10 @@ export type MissionResult = {
   total: number;
   firstTryErrors: number;
   kinds: string[];
+  /** Exercices ratés au premier essai */
+  wrongIds: string[];
+  /** Exercices réussis au premier essai */
+  rightIds: string[];
 };
 
 export type MissionReward = {
@@ -234,6 +247,19 @@ export function applyMission(before: Progress, r: MissionResult, today = dayKey(
 
   const sticker = STICKERS.find((s) => !p.stickers.includes(s.id)) ?? null;
 
+  // Journal des pièges : les erreurs entrent, deux réussites de suite les font sortir
+  const errors = { ...p.errors };
+  for (const id of r.wrongIds) {
+    const e = errors[id];
+    errors[id] = { lessonId: e?.lessonId ?? r.lessonId, count: (e?.count ?? 0) + 1, fixed: 0, lastDay: today };
+  }
+  for (const id of r.rightIds) {
+    const e = errors[id];
+    if (!e) continue;
+    if (e.fixed + 1 >= PIEGES_FIXED_NEEDED) delete errors[id];
+    else errors[id] = { ...e, fixed: e.fixed + 1 };
+  }
+
   const todayNext = {
     ...p.today,
     good: p.today.good + r.good,
@@ -245,7 +271,8 @@ export function applyMission(before: Progress, r: MissionResult, today = dayKey(
     coins: p.coins + coins,
     xp: p.xp + xp,
     streak: { count: streak, lastDay: today },
-    mastery: { ...p.mastery, [r.lessonId]: mastery },
+    mastery: r.lessonId === PIEGES_ID ? p.mastery : { ...p.mastery, [r.lessonId]: mastery },
+    errors,
     stickers: sticker ? [...p.stickers, sticker.id] : p.stickers,
     today: todayNext,
   };
