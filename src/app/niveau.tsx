@@ -22,7 +22,7 @@ export default function NiveauScreen() {
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
         <Body muted>
-          La classe choisit les leçons proposées à l'enfant. Les leçons de CP et de CE1 sont prêtes ;
+          La classe choisit les leçons proposées à l'enfant. Les leçons de CP, CE1 et CE2 sont prêtes ;
           les autres niveaux arrivent, et se remplissent déjà avec les photos de leçons.
         </Body>
         {LEVEL_GROUPS.map((group) => (
