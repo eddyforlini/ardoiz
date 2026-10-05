@@ -1,18 +1,49 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { UniversProvider, useUnivers } from '@/univers/UniversProvider';
 
 SplashScreen.preventAutoHideAsync();
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+function Root() {
+  const { univers, loading } = useUnivers();
+
+  useEffect(() => {
+    if (!loading) SplashScreen.hideAsync();
+  }, [loading]);
+
+  const dark = ['espace', 'gaming'].includes(univers.id);
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <>
+      <StatusBar style={dark ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: univers.colors.bg },
+        }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="univers"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: 'Choisis ton univers',
+            headerStyle: { backgroundColor: univers.colors.card },
+            headerTintColor: univers.colors.ink,
+          }}
+        />
+      </Stack>
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <UniversProvider>
+      <Root />
+    </UniversProvider>
   );
 }
