@@ -6,8 +6,7 @@ import type { Lesson, Level, Subject, Theme } from './types';
  * que personne ne montre : chaque leçon jouée se rattache à un attendu, et
  * le parent voit en une page où en est son enfant par rapport à l'école.
  *
- * Pour l'instant le CE1 est renseigné ; les autres niveaux suivront la même
- * forme. Les formulations sont raccourcies pour tenir sur un téléphone.
+ * CP et CE1 sont renseignés ; les autres niveaux suivront la même forme. Les formulations sont raccourcies pour tenir sur un téléphone.
  */
 export type Attendu = {
   id: string;
@@ -21,6 +20,30 @@ export type Attendu = {
 };
 
 export const PROGRAMME: Attendu[] = [
+  // CP, maths
+  { id: 'cp-nb-lire', level: 'CP', subject: 'maths', theme: 'nombres', text: 'Lire, écrire et nommer les nombres jusqu\'à 100.', keywords: /nombres? jusqu|lire les nombres|écrire les nombres|cent\b/i },
+  { id: 'cp-nb-denombrer', level: 'CP', subject: 'maths', theme: 'nombres', text: 'Dénombrer une collection, comparer et ranger des nombres jusqu\'à 100.', keywords: /compt|dénombr|compar|ranger|plus grand|plus petit/i },
+  { id: 'cp-nb-dizaines', level: 'CP', subject: 'maths', theme: 'nombres', text: 'Comprendre les dizaines et les unités, décomposer un nombre à deux chiffres.', keywords: /dizaine|unité|décompos|numération/i },
+  { id: 'cp-nb-suite', level: 'CP', subject: 'maths', theme: 'nombres', text: 'Compter de 1 en 1, de 2 en 2, de 5 en 5 et de 10 en 10 ; se repérer sur la file numérique.', keywords: /suite|de 2 en 2|de 5 en 5|de 10 en 10|file numérique|droite graduée|avant|après/i },
+  { id: 'cp-calc-add', level: 'CP', subject: 'maths', theme: 'calcul', text: 'Additionner et soustraire de petits nombres, connaître les compléments à 10.', keywords: /addition|soustraction|ajouter|enlever|complément|plus|moins/i },
+  { id: 'cp-calc-doubles', level: 'CP', subject: 'maths', theme: 'calcul', text: 'Connaître les doubles jusqu\'à 10 + 10 et calculer en ligne jusqu\'à 100.', keywords: /double|moitié|calcul en ligne|calcul mental/i },
+  { id: 'cp-calc-problemes', level: 'CP', subject: 'maths', theme: 'calcul', text: 'Résoudre des problèmes simples d\'ajout, de retrait et de partage.', keywords: /problème|énoncé|partage|combien/i },
+  { id: 'cp-gm-longueurs', level: 'CP', subject: 'maths', theme: 'grandeurs', text: 'Comparer et mesurer des longueurs avec une règle, en centimètres.', keywords: /longueur|centimètre|mesur|règle|plus long|plus court/i },
+  { id: 'cp-gm-temps', level: 'CP', subject: 'maths', theme: 'grandeurs', text: 'Se repérer dans la journée, la semaine, le mois ; lire les heures pleines.', keywords: /heure|jour|semaine|mois|calendrier|horloge|matin|soir/i },
+  { id: 'cp-gm-monnaie', level: 'CP', subject: 'maths', theme: 'grandeurs', text: 'Reconnaître les pièces et les billets, composer une somme en euros.', keywords: /monnaie|euro|pièce|billet|prix/i },
+  { id: 'cp-geo-formes', level: 'CP', subject: 'maths', theme: 'geometrie', text: 'Reconnaître le carré, le rectangle, le triangle, le rond, le cube et la boule.', keywords: /carré|rectangle|triangle|rond|cercle|cube|boule|forme|solide/i },
+  { id: 'cp-geo-espace', level: 'CP', subject: 'maths', theme: 'geometrie', text: 'Se repérer dans l\'espace : devant, derrière, dessus, dessous, gauche, droite ; se déplacer sur un quadrillage.', keywords: /repér|devant|derrière|gauche|droite|dessus|dessous|quadrillage/i },
+  // CP, français
+  { id: 'cp-lect-sons', level: 'CP', subject: 'francais', theme: 'lecture', text: 'Connaître les correspondances entre les lettres et les sons, lire des syllabes et des mots simples.', keywords: /syllabe|son\b|sons|lettre|décod|lire des mots|combinatoire/i },
+  { id: 'cp-lect-mots', level: 'CP', subject: 'francais', theme: 'lecture', text: 'Lire des mots fréquents et des phrases courtes, comprendre ce qu\'on lit.', keywords: /mots? (outils?|fréquents?)|phrase|compréhension|comprendre|texte/i },
+  { id: 'cp-oral-memoriser', level: 'CP', subject: 'francais', theme: 'poesie', text: 'Mémoriser et réciter une comptine ou un petit poème.', keywords: /poème|poésie|comptine|récit|mémoris/i },
+  { id: 'cp-ortho-sons', level: 'CP', subject: 'francais', theme: 'orthographe', text: 'Écrire des syllabes et des mots simples en respectant les sons (a, i, o, u, é, ou, on, an, in).', keywords: /écrire les sons|encod|dictée de syllabes|\b(ou|on|an|in|oi)\b/i },
+  { id: 'cp-ortho-mots', level: 'CP', subject: 'francais', theme: 'orthographe', text: 'Orthographier les mots outils et les mots de la classe appris par cœur.', keywords: /mots? (outils?|de la semaine|invariable)|dictée|orthograph/i },
+  { id: 'cp-gram-phrase', level: 'CP', subject: 'francais', theme: 'grammaire', text: 'Reconnaître une phrase : majuscule, point, ordre des mots.', keywords: /phrase|majuscule|point|ordre des mots/i },
+  { id: 'cp-gram-nom', level: 'CP', subject: 'francais', theme: 'grammaire', text: 'Distinguer le nom et le verbe, un et des, le et les, fille et garçon.', keywords: /\bnom\b|verbe|déterminant|singulier|pluriel|masculin|féminin/i },
+  { id: 'cp-conj-present', level: 'CP', subject: 'francais', theme: 'conjugaison', text: 'Comprendre que le verbe change avec je, tu, il ; utiliser être et avoir à l\'oral et à l\'écrit.', keywords: /conjug|présent|je|tu|il|être|avoir/i },
+  { id: 'cp-voc-mots', level: 'CP', subject: 'francais', theme: 'vocabulaire', text: 'Ranger des mots par catégorie, trouver des contraires simples, utiliser le vocabulaire de l\'école et de la maison.', keywords: /vocab|catégorie|contraire|famille|mots de/i },
+  { id: 'cp-voc-alphabet', level: 'CP', subject: 'francais', theme: 'vocabulaire', text: 'Connaître l\'alphabet dans l\'ordre, en lettres majuscules et minuscules.', keywords: /alphab|majuscule|minuscule|lettres/i },
   // Maths, nombres
   { id: 'ce1-nb-lire', level: 'CE1', subject: 'maths', theme: 'nombres', text: 'Lire, écrire et nommer les nombres jusqu\'à 1 000.', keywords: /nombres? jusqu|lire les nombres|écrire les nombres|mille|1 ?000/i },
   { id: 'ce1-nb-comparer', level: 'CE1', subject: 'maths', theme: 'nombres', text: 'Comparer, ranger et encadrer les nombres ; les placer sur une droite graduée.', keywords: /compar|ranger|encadr|droite graduée|ordre croissant/i },
