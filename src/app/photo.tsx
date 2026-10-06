@@ -18,8 +18,9 @@ import { useUnivers } from '@/univers/UniversProvider';
 
 type State =
   | { step: 'idle' }
-  | { step: 'analysing'; uri: string }
-  | { step: 'preview'; uri: string; result: Result }
+  | { step: 'analysing'; uri: string; remote: boolean }
+  /** base64 gardé tant qu'une lecture complète sur le serveur reste possible, pour le bouton « Pas la bonne leçon ? » */
+  | { step: 'preview'; uri: string; result: Result; base64?: string }
   | { step: 'error'; uri: string | null; message: string };
 
 /** Réduit la photo (1280 px de large, JPEG) : assez pour lire une page, léger à envoyer */
@@ -53,18 +54,33 @@ export default function PhotoScreen() {
       const picked = await pick();
       if (picked.canceled || !picked.assets[0]) return;
       const { base64, uri } = await shrink(picked.assets[0].uri);
-      setState({ step: 'analysing', uri });
+      setState({ step: 'analysing', uri, remote: !ocrAvailable });
       if (ocrAvailable) {
         const text = await readText(uri);
         const r = analyseText(text, level);
         if (r.kind !== 'unknown') {
-          setState({ step: 'preview', uri, result: { lesson: r.lesson, warning: r.why, dropped: 0, fromBank: r.kind === 'bank' } });
+          setState({
+            step: 'preview',
+            uri,
+            result: { lesson: r.lesson, warning: r.why, dropped: 0, fromBank: r.kind === 'bank' },
+            base64: serverReady ? base64 : undefined,
+          });
           return;
         }
         if (!serverReady) {
           throw new Error(`${r.why} Recopie le texte dans « Taper les mots ou la poésie », onglet « Texte de la leçon ».`);
         }
       }
+      await sendToServer(uri, base64);
+    } catch (err) {
+      setState({ step: 'error', uri: null, message: err instanceof Error ? err.message : 'Quelque chose a raté.' });
+    }
+  }
+
+  /** Lecture complète sur le serveur : quand les règles n'ont rien reconnu, ou que le parent dit que ce n'est pas la bonne leçon */
+  async function sendToServer(uri: string, base64: string) {
+    setState({ step: 'analysing', uri, remote: true });
+    try {
       const result = await analysePhoto(base64, 'image/jpeg', level);
       setState({ step: 'preview', uri, result });
     } catch (err) {
@@ -135,7 +151,9 @@ export default function PhotoScreen() {
               <Image source={{ uri: state.uri }} style={styles.thumb} resizeMode="cover" />
               <ActivityIndicator size="large" color={c.primary} />
               <Body bold>Gribouille lit la page...</Body>
-              <Body muted style={styles.centerText}>{ocrAvailable ? 'Quelques secondes, tout se passe sur le téléphone.' : 'Une vingtaine de secondes, le temps de fabriquer les jeux.'}</Body>
+              <Body muted style={styles.centerText}>
+                {state.remote ? 'Une trentaine de secondes : la page part au serveur, qui fabrique les jeux puis l\'oublie.' : 'Quelques secondes, tout se passe sur le téléphone.'}
+              </Body>
             </Card>
           )}
 
@@ -199,6 +217,14 @@ export default function PhotoScreen() {
 
               <Button label="Valider et jouer" variant="sun" onPress={() => validate(state.result)} />
               <Button label="Reprendre la photo" variant="ghost" onPress={() => setState({ step: 'idle' })} />
+              {state.base64 && (
+                <>
+                  <Button label="Pas la bonne leçon ? Envoyer la photo" variant="ghost" onPress={() => sendToServer(state.uri, state.base64!)} />
+                  <Body muted style={styles.centerText}>
+                    La page sera lue entièrement sur le serveur, puis oubliée.
+                  </Body>
+                </>
+              )}
             </>
           )}
         </ScrollView>

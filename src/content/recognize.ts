@@ -210,29 +210,67 @@ const STOP = new Set(
   ),
 );
 
+/** Racine grossière : sans le s ou le x du pluriel, pour que « tables » et « table » comptent pareil */
+function stem(w: string): string {
+  return w.length > 3 ? w.replace(/[sx]$/, '') : w;
+}
+
 function tokens(s: string): Set<string> {
-  return new Set(fold(s).split(' ').filter((w) => w.length > 2 && !STOP.has(w)));
+  return new Set(
+    fold(s)
+      .split(' ')
+      .filter((w) => w.length > 2 && !STOP.has(w))
+      .map(stem),
+  );
+}
+
+function lessonText(l: Lesson): string {
+  return `${l.title} ${l.notion} ${l.summary} ${l.attendu ?? ''}`;
 }
 
 /**
- * Score de ressemblance entre le texte et une leçon de la banque. Les mots du
- * titre et de la notion comptent double et il en faut au moins un : le
- * résumé seul, plein de mots courants, rapprochait n'importe quelle page de
- * lecture d'une leçon de sciences ou d'une comptine.
+ * Dans combien de leçons chaque mot apparaît. Un mot présent un peu partout
+ * (« mots », « lire », « écrire », « nombres ») ne distingue rien : une feuille
+ * de devoirs de CP se rattachait à une leçon de CM2 à cause d'eux.
  */
-function scoreLesson(text: Set<string>, l: Lesson): { score: number; core: number; coreSize: number } {
+let docFreq: Map<string, number> | null = null;
+function isDistinctive(w: string): boolean {
+  if (!docFreq) {
+    docFreq = new Map();
+    for (const l of LESSONS) tokens(lessonText(l)).forEach((t) => docFreq!.set(t, (docFreq!.get(t) ?? 0) + 1));
+  }
+  return (docFreq.get(w) ?? 0) <= Math.max(3, Math.round(LESSONS.length * 0.04));
+}
+
+type Similarity = { score: number; distinctiveCore: number; distinctiveAll: number };
+
+/**
+ * Ressemblance entre le texte et une leçon de la banque : seuls les mots rares
+ * comptent vraiment, ceux du titre et de la notion trois fois plus que ceux du
+ * résumé. Les mots courants ne servent qu'à départager.
+ */
+function scoreLesson(text: Set<string>, l: Lesson): Similarity {
   const coreWords = tokens(`${l.title} ${l.notion}`);
-  const titleWords = tokens(l.title);
   const rest = tokens(`${l.summary} ${l.attendu ?? ''}`);
-  let core = 0;
+  let score = 0;
+  let distinctiveCore = 0;
+  let distinctiveAll = 0;
   coreWords.forEach((w) => {
-    if (text.has(w)) core += 1;
+    if (!text.has(w)) return;
+    if (isDistinctive(w)) {
+      score += 3;
+      distinctiveCore += 1;
+      distinctiveAll += 1;
+    } else score += 0.25;
   });
-  let other = 0;
   rest.forEach((w) => {
-    if (!coreWords.has(w) && text.has(w)) other += 1;
+    if (coreWords.has(w) || !text.has(w)) return;
+    if (isDistinctive(w)) {
+      score += 1;
+      distinctiveAll += 1;
+    } else score += 0.25;
   });
-  return { score: core * 2 + other, core, coreSize: titleWords.size };
+  return { score, distinctiveCore, distinctiveAll };
 }
 
 export function analyseText(raw: string, level: Level, title?: string): Recognition {
@@ -264,18 +302,24 @@ export function analyseText(raw: string, level: Level, title?: string): Recognit
     return { kind: 'generated', lesson: wordsLesson({ title: title?.trim() || undefined, words: words.map((word) => ({ word })), level }), why: `${words.length} mots à apprendre.` };
   }
 
-  // 5. Une leçon déjà dans la banque, au même niveau d'abord
+  // 5. Une leçon déjà dans la banque. D'abord par son titre, s'il occupe une ligne entière de la page
+  const foldedLines = new Set(lines.map((l) => fold(l)));
+  const byTitle = LESSONS.filter((l) => foldedLines.has(fold(l.title))).sort((a, b) => Number(b.level === level) - Number(a.level === level));
+  if (byTitle.length) {
+    return { kind: 'bank', lesson: byTitle[0], why: `C'est la leçon « ${byTitle[0].title} », déjà prête.` };
+  }
+
+  // Sinon par ressemblance, au même niveau d'abord : il faut un mot rare du titre ou de la notion et trois mots rares en tout
   const toks = tokens(text);
   const ranked = LESSONS.map((l) => {
-    const { score, core, coreSize } = scoreLesson(toks, l);
-    return { l, s: score + (l.level === level ? 1 : 0), core, coreSize };
+    const sim = scoreLesson(toks, l);
+    return { l, s: sim.score + (l.level === level ? 0.5 : 0), ...sim };
   })
     .filter((x) => x.s >= 3)
     .sort((a, b) => b.s - a.s);
-  // Au moins un mot du titre ou de la notion, et un score net : « sons », « tables », « verbe » suffisent avec un résumé qui concorde.
-  // Les leçons d'homophones (« a ou à ») n'ont que des mots vides dans leur titre : pour elles, le résumé décide.
-  if (ranked.length && (ranked[0].core >= 1 || ranked[0].coreSize === 0) && ranked[0].s >= 6) {
-    return { kind: 'bank', lesson: ranked[0].l, why: `Ça ressemble à la leçon « ${ranked[0].l.title} », déjà prête.` };
+  const best = ranked[0];
+  if (best && best.distinctiveCore >= 1 && best.distinctiveAll >= 3 && best.s >= 6) {
+    return { kind: 'bank', lesson: best.l, why: `Ça ressemble à la leçon « ${best.l.title} », déjà prête.` };
   }
 
   // 6. Au moins l'attendu du programme, pour ranger la leçon
