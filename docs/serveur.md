@@ -18,6 +18,26 @@ npx supabase functions deploy analyser-photo
 - `secrets set` envoie la clé Anthropic au serveur sans l'écrire dans le projet.
 - Après chaque changement de la fonction, relancer seulement `functions deploy`.
 
+## Pendant les tests, sans clé API : le pont local
+
+Un abonnement Claude (Pro ou Max) ne donne pas de clé API, mais il donne Claude Code. Le pont local est un petit serveur sur le Mac (`scripts/pont-claude.mts`) qui reçoit la photo de l'appli et la passe à Claude Code en mode headless (`claude -p`). L'analyse passe donc par l'abonnement de la personne connectée dans Claude Code, avec le même prompt, le même schéma et les mêmes vérifications que la fonction serveur (`contrat.ts`, partagé).
+
+Ce que les conditions d'Anthropic permettent, et pas plus :
+
+- **Oui** : toi, sur ton Mac, pour tes propres photos pendant le développement. C'est Claude Code utilisé en script, un usage prévu.
+- **Non** : mettre un jeton d'abonnement sur un serveur (Supabase ou autre), ou faire passer les photos d'autres personnes par ton abonnement. Dès qu'un autre utilisateur est concerné, il faut la fonction serveur et une clé API.
+
+Mise en route :
+
+1. Claude Code connecté sur le Mac (`/login` dans Claude Code si besoin).
+2. Dans le Terminal, dans le dossier du projet : `npm run pont`. Il affiche l'adresse à copier, par exemple `http://192.168.1.202:8787`.
+3. Dans `.env`, remplir `EXPO_PUBLIC_ANALYSE_URL` avec cette adresse, puis relancer `npx expo start`. Le téléphone doit être sur le même Wi-Fi que le Mac.
+4. Dans l'appli, une photo que les règles ne reconnaissent pas part vers le pont. Le Terminal affiche une ligne par photo : niveau, durée, exercices gardés et écartés.
+
+La photo est écrite dans un dossier temporaire du Mac le temps de la lecture, puis supprimée. Une photo à la fois, 20 à 60 secondes chacune. `PONT_MODEL=sonnet npm run pont` consomme moins d'abonnement pour des essais rapides.
+
+Sur une appli installée (`npx expo run:android --variant release`), Android refuse le HTTP en clair, et le pont est en `http://`. `app.config.js` ajoute l'exception (`usesCleartextTraffic`) seulement quand `EXPO_PUBLIC_ANALYSE_URL` est rempli dans `.env` : un build fait sans ce fichier n'y a pas droit. Après avoir rempli `.env`, relancer `npx expo prebuild --platform android` puis le `run:android`, sinon le téléphone affiche « Le pont local ne répond pas ».
+
 ## Brancher l'appli
 
 Copier `.env.example` en `.env` et remplir `EXPO_PUBLIC_SUPABASE_URL` et `EXPO_PUBLIC_SUPABASE_ANON_KEY` (Project Settings > Data API). Relancer `npx expo start`. Le fichier `.env` n'est pas versionné.

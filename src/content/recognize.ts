@@ -166,16 +166,34 @@ function cleanLines(text: string): string[] {
     .filter((l) => l.length > 0);
 }
 
-/** Vrai quand les lignes ressemblent à des vers : courtes, sans chiffres, avec des rimes */
+/**
+ * Vrai quand le texte ressemble à de la prose coupée par la largeur de la
+ * page : une bonne part des lignes commence par une minuscule, ce qu'un vers
+ * ne fait presque jamais. Une leçon d'histoire photographiée est dans ce cas.
+ */
+function looksLikeProse(lines: string[]): boolean {
+  const letterStart = lines.filter((l) => /^\p{L}/u.test(l));
+  if (letterStart.length < 4) return false;
+  const lower = letterStart.filter((l) => /^\p{Ll}/u.test(l)).length;
+  return lower >= letterStart.length * 0.25;
+}
+
+/** Vrai quand les lignes ressemblent à des vers : courtes, sans chiffres, avec des rimes proches (AABB, ABAB, ABBA) */
 function looksLikePoem(lines: string[]): boolean {
-  if (lines.length < 4) return false;
+  if (lines.length < 4 || looksLikeProse(lines)) return false;
   const short = lines.filter((l) => l.split(/\s+/).length <= 12 && !/\d/.test(l)).length;
   if (short < lines.length * 0.8) return false;
-  const keys = lines.map((l) => rhymeKey(lastWord(l))).filter((k) => k.length > 0);
-  const counts = new Map<string, number>();
-  keys.forEach((k) => counts.set(k, (counts.get(k) ?? 0) + 1));
-  const rhymed = [...counts.values()].filter((n) => n >= 2).reduce((a, b) => a + b, 0);
-  return rhymed >= Math.max(2, keys.length * 0.4);
+  const keys = lines.map((l) => rhymeKey(lastWord(l)));
+  const rhymed = new Set<number>();
+  for (let i = 0; i < keys.length; i++) {
+    for (let j = i + 1; j <= i + 3 && j < keys.length; j++) {
+      if (keys[i] && keys[i] === keys[j]) {
+        rhymed.add(i);
+        rhymed.add(j);
+      }
+    }
+  }
+  return rhymed.size >= Math.max(2, keys.length * 0.4);
 }
 
 /** Vrai quand le texte est une liste de mots : beaucoup d'éléments d'un ou deux mots */
@@ -186,23 +204,89 @@ function looksLikeWordList(lines: string[]): string[] | null {
   return shortItems.length >= items.length * 0.8 ? shortItems.slice(0, 20) : null;
 }
 
-const STOP = new Set('le la les un une des de du et est en a au aux ce ces cette dans sur pour par avec que qui ne pas il elle on nous vous ils elles je tu son sa ses mon ma mes ton ta tes leur leurs ou où'.split(' '));
+const STOP = new Set(
+  'le la les un une des de du et est en a au aux ce ces cette dans sur pour par avec que qui ne pas il elle on nous vous ils elles je tu son sa ses mon ma mes ton ta tes leur leurs ou où quand sans puis sous trop alors très tout tous toute toutes comme mais plus moins bien aussi même autre autres chaque encore déjà entre vers chez depuis après avant pendant sont ont été fait faire être avoir peut peuvent dit dire deux trois quatre cinq petit petite grand grande'.split(
+    ' ',
+  ),
+);
+
+/** Racine grossière : sans le s ou le x du pluriel, pour que « tables » et « table » comptent pareil */
+function stem(w: string): string {
+  return w.length > 3 ? w.replace(/[sx]$/, '') : w;
+}
 
 function tokens(s: string): Set<string> {
-  return new Set(fold(s).split(' ').filter((w) => w.length > 2 && !STOP.has(w)));
+  return new Set(
+    fold(s)
+      .split(' ')
+      .filter((w) => w.length > 2 && !STOP.has(w))
+      .map(stem),
+  );
 }
 
-/** Score de ressemblance entre le texte et une leçon de la banque */
-function scoreLesson(text: Set<string>, l: Lesson): number {
-  const hay = tokens(`${l.title} ${l.notion} ${l.summary} ${l.attendu ?? ''}`);
-  let hits = 0;
-  hay.forEach((w) => {
-    if (text.has(w)) hits += 1;
+function lessonText(l: Lesson): string {
+  return `${l.title} ${l.notion} ${l.summary} ${l.attendu ?? ''}`;
+}
+
+/**
+ * Dans combien de leçons chaque mot apparaît. Un mot présent un peu partout
+ * (« mots », « lire », « écrire », « nombres ») ne distingue rien : une feuille
+ * de devoirs de CP se rattachait à une leçon de CM2 à cause d'eux.
+ */
+let docFreq: Map<string, number> | null = null;
+function isDistinctive(w: string): boolean {
+  if (!docFreq) {
+    docFreq = new Map();
+    for (const l of LESSONS) tokens(lessonText(l)).forEach((t) => docFreq!.set(t, (docFreq!.get(t) ?? 0) + 1));
+  }
+  return (docFreq.get(w) ?? 0) <= Math.max(3, Math.round(LESSONS.length * 0.04));
+}
+
+type Similarity = { score: number; distinctiveCore: number; distinctiveAll: number };
+
+/**
+ * Ressemblance entre le texte et une leçon de la banque : seuls les mots rares
+ * comptent vraiment, ceux du titre trois fois plus que les autres. La notion
+ * et le résumé citent des exemples (« voir, prendre », « nos devoirs avant le
+ * dîner »), rares dans la banque mais ordinaires sur une vraie page : ils ne
+ * font que départager.
+ */
+function scoreLesson(text: Set<string>, l: Lesson): Similarity {
+  const coreWords = tokens(l.title);
+  const rest = tokens(`${l.notion} ${l.summary} ${l.attendu ?? ''}`);
+  let score = 0;
+  let distinctiveCore = 0;
+  let distinctiveAll = 0;
+  coreWords.forEach((w) => {
+    if (!text.has(w)) return;
+    if (isDistinctive(w)) {
+      score += 3;
+      distinctiveCore += 1;
+      distinctiveAll += 1;
+    } else score += 0.25;
   });
-  return hits;
+  rest.forEach((w) => {
+    if (coreWords.has(w) || !text.has(w)) return;
+    if (isDistinctive(w)) {
+      score += 1;
+      distinctiveAll += 1;
+    } else score += 0.25;
+  });
+  return { score, distinctiveCore, distinctiveAll };
 }
 
-export function analyseText(raw: string, level: Level, title?: string): Recognition {
+export type AnalyseOptions = {
+  /**
+   * Autoriser le rattachement par ressemblance à une leçon de la banque. Vrai
+   * par défaut (texte tapé par le parent). Faux quand une lecture complète par
+   * le serveur est possible : sur une vraie page, la ressemblance se trompe
+   * trop souvent, le titre sur une ligne entière reste le seul rattachement.
+   */
+  allowSimilar?: boolean;
+};
+
+export function analyseText(raw: string, level: Level, title?: string, options: AnalyseOptions = {}): Recognition {
+  const allowSimilar = options.allowSimilar ?? true;
   const text = raw.trim();
   const lines = cleanLines(text);
   if (!lines.length) return { kind: 'unknown', attendu: null, nearest: [], why: 'Le texte est vide.' };
@@ -231,13 +315,24 @@ export function analyseText(raw: string, level: Level, title?: string): Recognit
     return { kind: 'generated', lesson: wordsLesson({ title: title?.trim() || undefined, words: words.map((word) => ({ word })), level }), why: `${words.length} mots à apprendre.` };
   }
 
-  // 5. Une leçon déjà dans la banque, au même niveau d'abord
+  // 5. Une leçon déjà dans la banque. D'abord par son titre, s'il occupe une ligne entière de la page
+  const foldedLines = new Set(lines.map((l) => fold(l)));
+  const byTitle = LESSONS.filter((l) => foldedLines.has(fold(l.title))).sort((a, b) => Number(b.level === level) - Number(a.level === level));
+  if (byTitle.length) {
+    return { kind: 'bank', lesson: byTitle[0], why: `C'est la leçon « ${byTitle[0].title} », déjà prête.` };
+  }
+
+  // Sinon par ressemblance, au même niveau d'abord : deux mots rares du titre et trois mots rares en tout
   const toks = tokens(text);
-  const ranked = LESSONS.map((l) => ({ l, s: scoreLesson(toks, l) + (l.level === level ? 1 : 0) }))
+  const ranked = LESSONS.map((l) => {
+    const sim = scoreLesson(toks, l);
+    return { l, s: sim.score + (l.level === level ? 0.5 : 0), ...sim };
+  })
     .filter((x) => x.s >= 3)
     .sort((a, b) => b.s - a.s);
-  if (ranked.length && ranked[0].s >= 4) {
-    return { kind: 'bank', lesson: ranked[0].l, why: `Ça ressemble à la leçon « ${ranked[0].l.title} », déjà prête.` };
+  const best = ranked[0];
+  if (allowSimilar && best && best.distinctiveCore >= 2 && best.distinctiveAll >= 3 && best.s >= 6) {
+    return { kind: 'bank', lesson: best.l, why: `Ça ressemble à la leçon « ${best.l.title} », déjà prête.` };
   }
 
   // 6. Au moins l'attendu du programme, pour ranger la leçon
