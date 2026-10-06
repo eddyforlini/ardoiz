@@ -19,6 +19,7 @@ Une étape = une branche et une PR, essayée sur téléphone avec Expo Go avant 
 | 3j. Banque CE2 | 33 leçons, 320 exercices, 27 attendus de fin de CE2 couverts (`bank-ce2-maths.ts`, `bank-ce2-francais.ts`) | En cours (PR 15) |
 | 3k. Banque CM1 | 37 leçons, 370 exercices, 33 attendus de fin de CM1 couverts (`bank-cm1-maths.ts`, `bank-cm1-francais.ts`) ; droite graduée compatible avec les décimaux | En cours (PR 16) |
 | 3l. Banque CM2 | 38 leçons, 380 exercices, 32 attendus de fin de CM2 couverts (`bank-cm2-maths.ts`, `bank-cm2-francais.ts`). L'école élémentaire est complète : 170 leçons, 1 647 exercices | En cours (PR 17) |
+| 3m. Pédagogie fondée | Rapport `docs/recherche-apprendre-en-jouant.md` (programmes 2024-2025, sciences de l'apprentissage 6-11 ans, formats par compétence, motivation, génération d'exercices). Prompt et validateurs de `contrat.ts` réécrits dessus ; révision espacée en cinq boîtes (J+1, 3, 7, 14, 30), « acquis » après trois réussites à des jours différents | En cours (PR 20) |
 | 3b. Comptes | Compte parent Supabase, plusieurs enfants, progrès synchronisés | À faire |
 | 4. Voix | Réciter, épeler, lire à voix haute, Ardoiz qui parle | À faire |
 | 5. Motivation | Progrès enregistrés, révision espacée, série, quêtes du jour, coffres et autocollants, monde à construire, Gribouille qui évolue | En cours (PR 4) |
@@ -34,5 +35,20 @@ Pour que l'appli ne coûte presque rien à faire tourner, l'intelligence artific
 2. **Lecture du texte sur le téléphone** (reconnaissance intégrée à iOS et Android), puis reconnaissance de la notion et jeux fabriqués par règles : mots de dictée, poésie, tables, listes. Gratuit. Voir `src/content/generate.ts`.
 3. **IA du téléphone** (Apple Intelligence, Gemini Nano) quand elle existe, pour reconnaître une notion ou reformuler une consigne. Gratuit.
 4. **Claude côté serveur** seulement pour ce que les trois premiers ne savent pas faire, avec un quota par famille et une mémoire des pages déjà lues. Quelques centimes par photo (`docs/serveur.md`). Pendant le développement, le pont local (`scripts/pont-claude.mts`) remplace le serveur et passe par l'abonnement Claude du développeur, pour ses propres photos seulement.
+
+## Ce que la recherche demande encore (voir les 28 décisions du rapport)
+
+Fait dans la PR 20 : décisions 2 (en partie : réussite visée, fin facile), 3, 4, 5, 6 (collection non annoncée, déjà le cas), 7, 9, 11, 13, 18, 20, 21 côté fabrication des jeux par Claude ; 4 et 22 côté révision espacée.
+
+À faire, par ordre d'effet :
+
+1. **Séance composée** (décision 8) : 4 à 6 jeux, moitié sur la leçon du jour, un tiers de retours échus, le reste sur des notions sûres en échauffement et en fin ; arrêt à 10 minutes ; jamais sur une erreur.
+2. **Escalier de difficulté** (décision 2) : un palier par exercice (choix < complétion < production), monter après 3 réussites, descendre après 2 erreurs, quitter la notion après 3 erreurs d'affilée.
+3. **Lire à voix haute** (décision 10) : fiche de son, fluence d'une minute sur un texte connu, poésie, avec reconnaissance vocale et feedback neutre en cas de doute. C'est l'étape 4 de la feuille de route.
+4. **Fiche de son au CP** (décision 18) : jeux par règles sur le son (entendre, repérer, assembler des syllabes, dicter), déchiffrable à 100 %, sans Claude.
+5. **Pièges par type d'erreur** (décision 9) : chaque distracteur porte son erreur type, le journal « Mes pièges » compte par type (son, lettre muette, accord, retenue).
+6. **Série douce** (décision 16) : hebdomadaire ou « 3 jours sur 7 », réparable, jamais reprochée à l'enfant.
+7. **Rapport parent** (décision 23) : notions et états, une ou deux erreurs types, prochain retour, une seule action ; jamais de score global.
+8. **Univers des grands réglés autrement** (conclusion du rapport) : moins d'indices, plus d'entrelacement, chronomètre visible possible, là où les petits restent sur la récupération guidée.
 
 Ensuite : autres niveaux, autres matières, classe partagée, mode sans écran, histoire du soir, appel de Gribouille, ardoise réelle.

@@ -67,7 +67,7 @@ export default function ParentScreen() {
             <Body muted>
               {lessonsPlayed === 0
                 ? 'Aucune mission jouée pour l\'instant.'
-                : `Maîtrise moyenne des leçons jouées : ${avg} %. Chaque leçon revient à J+1, J+3 puis J+7 après une réussite.`}
+                : `Maîtrise moyenne des leçons jouées : ${avg} %. Chaque leçon revient à J+1, J+3, J+7, J+14 puis J+30 après chaque réussite ; une mission ratée la ramène au lendemain. Une leçon est acquise après trois réussites à des jours différents.`}
             </Body>
             <Button label={`🎓 Le programme de ${level}, attendu par attendu`} variant="ghost" onPress={() => router.push('/programme')} />
           </Card>

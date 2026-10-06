@@ -11,9 +11,35 @@ export type Mastery = {
   best: number;
   plays: number;
   lastDay: string;
-  /** Jour de la prochaine révision (J+1, J+3, J+7) */
+  /** Jour de la prochaine révision */
   due: string;
+  /**
+   * Boîte de Leitner, de 1 à 5 : la leçon entre en boîte 1, monte d'une
+   * boîte à chaque mission réussie un autre jour, retombe en boîte 1 sous
+   * 60 %. Absente dans les anciens progrès : déduite du nombre de parties.
+   */
+  box?: number;
 };
+
+/**
+ * Révision espacée en cinq boîtes : la leçon revient à J+1, J+3, J+7, J+14
+ * puis J+30. Fondé sur l'espacement mesuré chez des élèves de primaire
+ * (voir docs/recherche-apprendre-en-jouant.md, décision 4) : un écart d'au
+ * moins un jour, des intervalles qui s'allongent, et jamais de retrait
+ * après un seul succès.
+ */
+export const LEITNER_DAYS = [1, 3, 7, 14, 30];
+/** Score à partir duquel une mission compte comme réussie (la cible est huit sur dix) */
+export const SUCCESS_SCORE = 80;
+/** En dessous, la leçon repart en boîte 1 et revient dès le lendemain */
+export const RESET_SCORE = 60;
+/** Boîte à partir de laquelle la leçon est « acquise » : trois réussites à des jours différents */
+export const DONE_BOX = 4;
+
+function boxOf(m: Mastery | undefined): number {
+  if (!m) return 0;
+  return m.box ?? Math.min(DONE_BOX - 1, m.plays);
+}
 
 /** Un exercice raté au premier essai, à retravailler. Il disparaît après deux réussites. */
 export type ErrorEntry = { lessonId: string; count: number; fixed: number; lastDay: string };
@@ -234,12 +260,16 @@ export function applyMission(before: Progress, r: MissionResult, today = dayKey(
     streak = gap <= 2 ? streak + 1 : 1;
   }
 
-  // Révision espacée
+  // Révision espacée : rejouer le même jour ne change ni la boîte ni la date ;
+  // un autre jour, la réussite monte d'une boîte, l'échec ramène en boîte 1,
+  // entre les deux la leçon garde sa boîte et son intervalle repart d'aujourd'hui.
   const prev = p.mastery[r.lessonId];
   const plays = (prev?.plays ?? 0) + 1;
-  const interval = score < 60 ? 1 : plays === 1 ? 1 : plays === 2 ? 3 : 7;
-  const due = addDays(today, interval);
-  const mastery: Mastery = { best: Math.max(prev?.best ?? 0, score), plays, lastDay: today, due };
+  const sameDay = prev?.lastDay === today;
+  const prevBox = boxOf(prev);
+  const box = !prev ? 1 : sameDay ? prevBox : score >= SUCCESS_SCORE ? Math.min(LEITNER_DAYS.length, prevBox + 1) : score < RESET_SCORE ? 1 : prevBox;
+  const due = prev && sameDay ? prev.due : addDays(today, LEITNER_DAYS[box - 1]);
+  const mastery: Mastery = { best: Math.max(prev?.best ?? 0, score), plays, lastDay: today, due, box };
 
   const coins = r.good * COINS_PER_GOOD + (perfect ? COINS_PERFECT : 0);
   const xp = r.good * XP_PER_GOOD + XP_PER_MISSION;
@@ -322,7 +352,7 @@ export function lessonHint(p: Progress, lessonId: string, today = dayKey()): str
   if (!m) return null;
   if (m.due <= today) return 'À réviser aujourd\'hui';
   const d = daysBetween(today, m.due);
-  return `Maîtrise ${m.best} % · retour dans ${d} jour${d > 1 ? 's' : ''}`;
+  return `${MASTERY_STATE[masteryState(p, lessonId)].label} · retour dans ${d} jour${d > 1 ? 's' : ''}`;
 }
 
 /**
@@ -341,7 +371,11 @@ export function missionReason(p: Progress, lessonId: string, today = dayKey()): 
   return m.best >= 80 ? 'Tu la connais bien, on s\'entraîne encore un peu.' : 'On la retravaille ensemble.';
 }
 
-/** Trois états lisibles par un enfant, à la place d'un pourcentage : à découvrir, en cours, acquis */
+/**
+ * Trois états lisibles par un enfant, à la place d'un pourcentage : à
+ * découvrir, en cours, acquis. « Acquis » demande trois missions réussies à
+ * des jours différents (boîte 4), pas un seul bon score.
+ */
 export type MasteryState = 'new' | 'progress' | 'done';
 
 export const MASTERY_STATE: Record<MasteryState, { glyph: string; label: string }> = {
@@ -353,7 +387,7 @@ export const MASTERY_STATE: Record<MasteryState, { glyph: string; label: string 
 export function masteryState(p: Progress, lessonId: string): MasteryState {
   const m = p.mastery[lessonId];
   if (!m) return 'new';
-  return m.best >= 80 ? 'done' : 'progress';
+  return boxOf(m) >= DONE_BOX ? 'done' : 'progress';
 }
 
 /** L'état le plus avancé parmi plusieurs leçons (pour un attendu du programme) */
