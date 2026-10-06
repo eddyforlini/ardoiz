@@ -58,12 +58,39 @@ Le passé composé se forme avec l'auxiliaire avoir ou être au présent, suivi 
 j'ai mangé, tu as fini, il est parti, nous avons chanté.
 Avec être, le participe passé s'accorde avec le sujet : elle est partie, ils sont partis.`;
 
-const cases: { name: string; text: string; level: Level; expect: string }[] = [
+// La vraie feuille de devoirs photographiée le 6 octobre 2026 (fiche graphème a, alphabet, gestes d'écriture)
+const feuilleCp = `Cahier d'entraînement à la lecture (petit cahier violet)
+Un adulte me lit la fiche graphème a.
+Je doit connaître :
+- les différentes graphies (les façons dont s'écrit le a),
+- le son que fait le graphème
+- le geste du son
+- et je sais raconter l'histoire de l'alpha.
+Porte vue noir de lecteur
+1. Exercice 1 (lecture 1):
+- Lire chaque lettre en la pointant du doigt et en faisant le geste à chaque lettre.
+- Puis je repasse avec mon doigt plusieurs fois sur les lettres a
+2. Connaître l'alphabet par cœur :
+- Je récite l'alphabet sans me tromper (Prendre l'alphabet réalisé en GS dans les différentes graphies et montrer chaque lettre quand je la dis)
+- Mes parents me montrent une lettre et je la nomme
+- Mes parents nomment une lettre et c'est moi qui la montre.
+Cahier fiche mémoire (cahier violet) « conseils pour les bons gestes d'écriture » + Lignage fourni dans un transparent
+Pour m'entraîner à écrire le graphème a, je garde à la maison le lignage fournit ce jour. Je peux alors m'entraîner à refaire le graphème avec un feutre ardoise directement sur le plastique.
+Je peux ensuite faire la ligne de a ci dessous
+- Mes parents m'aident à vérifier ma trousse (voir mot cahier gris et récapitulatif couverture cahier de texte)
+- Penser à laver la gourde.`;
+
+const cases: { name: string; text: string; level: Level; expect: string; allowSimilar?: boolean }[] = [
+  { name: 'vraie feuille de devoirs de CP, sans serveur', text: feuilleCp, level: 'CP', expect: 'unknown' },
+  { name: 'vraie feuille de devoirs de CP, avec serveur', text: feuilleCp, level: 'CP', expect: 'unknown', allowSimilar: false },
+  { name: 'cahier : les lettres muettes, avec serveur (pas de titre exact)', text: cahierMuettes, level: 'CE1', expect: 'unknown', allowSimilar: false },
+  { name: 'cahier : le passé composé, avec serveur (titre exact)', text: cahierPasseCompose, level: 'CM1', expect: 'bank', allowSimilar: false },
   { name: 'leçon d\'histoire (prose)', text: histoire, level: 'CE2', expect: 'unknown' },
   { name: 'leçon de sciences (prose)', text: sciences, level: 'CE2', expect: 'unknown' },
   { name: 'feuille de devoirs de CP, profil CE2', text: devoirs, level: 'CE2', expect: 'unknown' },
   { name: 'feuille de devoirs de CP, profil CP', text: devoirs, level: 'CP', expect: 'unknown' },
-  { name: 'cahier : les lettres muettes', text: cahierMuettes, level: 'CE1', expect: 'bank' },
+  // Sans serveur, une page sans titre exact de la banque n'est plus rattachée : « lettres » est trop courant pour compter
+  { name: 'cahier : les lettres muettes, sans serveur (limite connue)', text: cahierMuettes, level: 'CE1', expect: 'unknown' },
   { name: 'cahier : le passé composé', text: cahierPasseCompose, level: 'CM1', expect: 'bank' },
   { name: `poème (${known.title}, premier vers modifié)`, text: poeme, level: 'CE2', expect: 'generated' },
   { name: 'liste de dictée', text: dictee, level: 'CE2', expect: 'generated' },
@@ -71,7 +98,7 @@ const cases: { name: string; text: string; level: Level; expect: string }[] = [
 
 let failures = 0;
 for (const c of cases) {
-  const r = analyseText(c.text, c.level);
+  const r = analyseText(c.text, c.level, undefined, { allowSimilar: c.allowSimilar });
   const ok = r.kind === c.expect;
   if (!ok) failures += 1;
   console.log(`${ok ? 'ok ' : 'KO '} ${c.name} → ${r.kind} (${r.kind === 'unknown' ? r.why : r.lesson.title})`);

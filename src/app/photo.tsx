@@ -68,7 +68,8 @@ export default function PhotoScreen() {
       setState({ step: 'analysing', uri, remote: !ocrAvailable });
       if (ocrAvailable) {
         const text = await readText(uri);
-        const r = analyseText(text, level);
+        // Avec le serveur, pas de rattachement par ressemblance : une vraie page se lit mieux en entier
+        const r = analyseText(text, level, undefined, { allowSimilar: !serverReady });
         if (r.kind !== 'unknown') {
           setState({
             step: 'preview',

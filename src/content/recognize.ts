@@ -246,12 +246,14 @@ type Similarity = { score: number; distinctiveCore: number; distinctiveAll: numb
 
 /**
  * Ressemblance entre le texte et une leçon de la banque : seuls les mots rares
- * comptent vraiment, ceux du titre et de la notion trois fois plus que ceux du
- * résumé. Les mots courants ne servent qu'à départager.
+ * comptent vraiment, ceux du titre trois fois plus que les autres. La notion
+ * et le résumé citent des exemples (« voir, prendre », « nos devoirs avant le
+ * dîner »), rares dans la banque mais ordinaires sur une vraie page : ils ne
+ * font que départager.
  */
 function scoreLesson(text: Set<string>, l: Lesson): Similarity {
-  const coreWords = tokens(`${l.title} ${l.notion}`);
-  const rest = tokens(`${l.summary} ${l.attendu ?? ''}`);
+  const coreWords = tokens(l.title);
+  const rest = tokens(`${l.notion} ${l.summary} ${l.attendu ?? ''}`);
   let score = 0;
   let distinctiveCore = 0;
   let distinctiveAll = 0;
@@ -273,7 +275,18 @@ function scoreLesson(text: Set<string>, l: Lesson): Similarity {
   return { score, distinctiveCore, distinctiveAll };
 }
 
-export function analyseText(raw: string, level: Level, title?: string): Recognition {
+export type AnalyseOptions = {
+  /**
+   * Autoriser le rattachement par ressemblance à une leçon de la banque. Vrai
+   * par défaut (texte tapé par le parent). Faux quand une lecture complète par
+   * le serveur est possible : sur une vraie page, la ressemblance se trompe
+   * trop souvent, le titre sur une ligne entière reste le seul rattachement.
+   */
+  allowSimilar?: boolean;
+};
+
+export function analyseText(raw: string, level: Level, title?: string, options: AnalyseOptions = {}): Recognition {
+  const allowSimilar = options.allowSimilar ?? true;
   const text = raw.trim();
   const lines = cleanLines(text);
   if (!lines.length) return { kind: 'unknown', attendu: null, nearest: [], why: 'Le texte est vide.' };
@@ -309,8 +322,7 @@ export function analyseText(raw: string, level: Level, title?: string): Recognit
     return { kind: 'bank', lesson: byTitle[0], why: `C'est la leçon « ${byTitle[0].title} », déjà prête.` };
   }
 
-  // Sinon par ressemblance, au même niveau d'abord : il faut deux mots rares du titre ou de la notion et trois mots rares en tout.
-  // Les exemples du résumé (« nos devoirs avant le dîner ») sont rares dans la banque mais courants sur une vraie page : ils ne décident pas.
+  // Sinon par ressemblance, au même niveau d'abord : deux mots rares du titre et trois mots rares en tout
   const toks = tokens(text);
   const ranked = LESSONS.map((l) => {
     const sim = scoreLesson(toks, l);
@@ -319,7 +331,7 @@ export function analyseText(raw: string, level: Level, title?: string): Recognit
     .filter((x) => x.s >= 3)
     .sort((a, b) => b.s - a.s);
   const best = ranked[0];
-  if (best && best.distinctiveCore >= 2 && best.distinctiveAll >= 3 && best.s >= 6) {
+  if (allowSimilar && best && best.distinctiveCore >= 2 && best.distinctiveAll >= 3 && best.s >= 6) {
     return { kind: 'bank', lesson: best.l, why: `Ça ressemble à la leçon « ${best.l.title} », déjà prête.` };
   }
 
