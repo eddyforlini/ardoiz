@@ -26,7 +26,7 @@ const ExerciseSchema = z.object({
   kind: z.enum(['choice', 'truefalse', 'numberline', 'scramble', 'flash', 'order', 'blanks', 'speed', 'sort', 'tapword', 'sentence', 'dictation', 'count', 'pairs', 'fix']),
   explain: z.string().describe('Explication courte et bienveillante montrée après une erreur'),
   prompt: z.string().nullable().describe('Consigne (choice, numberline, order, blanks, speed, sort, tapword, sentence, count, pairs, fix)'),
-  options: z.array(z.string()).nullable().describe('choice : 2 à 4 propositions'),
+  options: z.array(z.string()).nullable().describe('choice : exactement 3 propositions'),
   answerIndex: z.number().int().nullable().describe('choice : index de la bonne proposition'),
   statement: z.string().nullable().describe('truefalse : affirmation'),
   answerBool: z.boolean().nullable().describe('truefalse : vrai ou faux'),
