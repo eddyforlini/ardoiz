@@ -44,5 +44,14 @@ iPhone : `npx expo run:ios --device` avec Xcode installé et un compte Apple
 (gratuit pour son propre téléphone). Sans Mac configuré, EAS Build
 (`npx eas-cli build --profile development`) construit dans le nuage.
 
-À refaire seulement quand un module natif est ajouté. Les changements de
-code habituels se rechargent sans rebuild.
+À refaire seulement quand un module natif est ajouté, ou quand `.env` change
+(`app.config.js` lit le pont local pour autoriser le HTTP en clair, voir
+`docs/serveur.md`). Les changements de code habituels se rechargent sans rebuild.
+
+## Appli installée pour de bon : `--variant release`
+
+`npx expo run:android --variant release --device <nom>` construit l'appli
+complète, JavaScript compris : elle démarre seule, sans Metro ni câble. Le
+nom de l'appareil est celui que donne `adb devices -l` (`model:`), par
+exemple `SM_S918B`. Chaque changement de code demande de relancer la
+commande (une minute une fois le premier build fait).

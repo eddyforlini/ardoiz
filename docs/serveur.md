@@ -36,6 +36,8 @@ Mise en route :
 
 La photo est écrite dans un dossier temporaire du Mac le temps de la lecture, puis supprimée. Une photo à la fois, 20 à 60 secondes chacune. `PONT_MODEL=sonnet npm run pont` consomme moins d'abonnement pour des essais rapides.
 
+Sur une appli installée (`npx expo run:android --variant release`), Android refuse le HTTP en clair, et le pont est en `http://`. `app.config.js` ajoute l'exception (`usesCleartextTraffic`) seulement quand `EXPO_PUBLIC_ANALYSE_URL` est rempli dans `.env` : un build fait sans ce fichier n'y a pas droit. Après avoir rempli `.env`, relancer `npx expo prebuild --platform android` puis le `run:android`, sinon le téléphone affiche « Le pont local ne répond pas ».
+
 ## Brancher l'appli
 
 Copier `.env.example` en `.env` et remplir `EXPO_PUBLIC_SUPABASE_URL` et `EXPO_PUBLIC_SUPABASE_ANON_KEY` (Project Settings > Data API). Relancer `npx expo start`. Le fichier `.env` n'est pas versionné.
