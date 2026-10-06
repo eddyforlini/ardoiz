@@ -166,16 +166,34 @@ function cleanLines(text: string): string[] {
     .filter((l) => l.length > 0);
 }
 
-/** Vrai quand les lignes ressemblent à des vers : courtes, sans chiffres, avec des rimes */
+/**
+ * Vrai quand le texte ressemble à de la prose coupée par la largeur de la
+ * page : une bonne part des lignes commence par une minuscule, ce qu'un vers
+ * ne fait presque jamais. Une leçon d'histoire photographiée est dans ce cas.
+ */
+function looksLikeProse(lines: string[]): boolean {
+  const letterStart = lines.filter((l) => /^\p{L}/u.test(l));
+  if (letterStart.length < 4) return false;
+  const lower = letterStart.filter((l) => /^\p{Ll}/u.test(l)).length;
+  return lower >= letterStart.length * 0.25;
+}
+
+/** Vrai quand les lignes ressemblent à des vers : courtes, sans chiffres, avec des rimes proches (AABB, ABAB, ABBA) */
 function looksLikePoem(lines: string[]): boolean {
-  if (lines.length < 4) return false;
+  if (lines.length < 4 || looksLikeProse(lines)) return false;
   const short = lines.filter((l) => l.split(/\s+/).length <= 12 && !/\d/.test(l)).length;
   if (short < lines.length * 0.8) return false;
-  const keys = lines.map((l) => rhymeKey(lastWord(l))).filter((k) => k.length > 0);
-  const counts = new Map<string, number>();
-  keys.forEach((k) => counts.set(k, (counts.get(k) ?? 0) + 1));
-  const rhymed = [...counts.values()].filter((n) => n >= 2).reduce((a, b) => a + b, 0);
-  return rhymed >= Math.max(2, keys.length * 0.4);
+  const keys = lines.map((l) => rhymeKey(lastWord(l)));
+  const rhymed = new Set<number>();
+  for (let i = 0; i < keys.length; i++) {
+    for (let j = i + 1; j <= i + 3 && j < keys.length; j++) {
+      if (keys[i] && keys[i] === keys[j]) {
+        rhymed.add(i);
+        rhymed.add(j);
+      }
+    }
+  }
+  return rhymed.size >= Math.max(2, keys.length * 0.4);
 }
 
 /** Vrai quand le texte est une liste de mots : beaucoup d'éléments d'un ou deux mots */
@@ -186,20 +204,35 @@ function looksLikeWordList(lines: string[]): string[] | null {
   return shortItems.length >= items.length * 0.8 ? shortItems.slice(0, 20) : null;
 }
 
-const STOP = new Set('le la les un une des de du et est en a au aux ce ces cette dans sur pour par avec que qui ne pas il elle on nous vous ils elles je tu son sa ses mon ma mes ton ta tes leur leurs ou où'.split(' '));
+const STOP = new Set(
+  'le la les un une des de du et est en a au aux ce ces cette dans sur pour par avec que qui ne pas il elle on nous vous ils elles je tu son sa ses mon ma mes ton ta tes leur leurs ou où quand sans puis sous trop alors très tout tous toute toutes comme mais plus moins bien aussi même autre autres chaque encore déjà entre vers chez depuis après avant pendant sont ont été fait faire être avoir peut peuvent dit dire deux trois quatre cinq petit petite grand grande'.split(
+    ' ',
+  ),
+);
 
 function tokens(s: string): Set<string> {
   return new Set(fold(s).split(' ').filter((w) => w.length > 2 && !STOP.has(w)));
 }
 
-/** Score de ressemblance entre le texte et une leçon de la banque */
-function scoreLesson(text: Set<string>, l: Lesson): number {
-  const hay = tokens(`${l.title} ${l.notion} ${l.summary} ${l.attendu ?? ''}`);
-  let hits = 0;
-  hay.forEach((w) => {
-    if (text.has(w)) hits += 1;
+/**
+ * Score de ressemblance entre le texte et une leçon de la banque. Les mots du
+ * titre et de la notion comptent double et il en faut au moins un : le
+ * résumé seul, plein de mots courants, rapprochait n'importe quelle page de
+ * lecture d'une leçon de sciences ou d'une comptine.
+ */
+function scoreLesson(text: Set<string>, l: Lesson): { score: number; core: number; coreSize: number } {
+  const coreWords = tokens(`${l.title} ${l.notion}`);
+  const titleWords = tokens(l.title);
+  const rest = tokens(`${l.summary} ${l.attendu ?? ''}`);
+  let core = 0;
+  coreWords.forEach((w) => {
+    if (text.has(w)) core += 1;
   });
-  return hits;
+  let other = 0;
+  rest.forEach((w) => {
+    if (!coreWords.has(w) && text.has(w)) other += 1;
+  });
+  return { score: core * 2 + other, core, coreSize: titleWords.size };
 }
 
 export function analyseText(raw: string, level: Level, title?: string): Recognition {
@@ -233,10 +266,15 @@ export function analyseText(raw: string, level: Level, title?: string): Recognit
 
   // 5. Une leçon déjà dans la banque, au même niveau d'abord
   const toks = tokens(text);
-  const ranked = LESSONS.map((l) => ({ l, s: scoreLesson(toks, l) + (l.level === level ? 1 : 0) }))
+  const ranked = LESSONS.map((l) => {
+    const { score, core, coreSize } = scoreLesson(toks, l);
+    return { l, s: score + (l.level === level ? 1 : 0), core, coreSize };
+  })
     .filter((x) => x.s >= 3)
     .sort((a, b) => b.s - a.s);
-  if (ranked.length && ranked[0].s >= 4) {
+  // Au moins un mot du titre ou de la notion, et un score net : « sons », « tables », « verbe » suffisent avec un résumé qui concorde.
+  // Les leçons d'homophones (« a ou à ») n'ont que des mots vides dans leur titre : pour elles, le résumé décide.
+  if (ranked.length && (ranked[0].core >= 1 || ranked[0].coreSize === 0) && ranked[0].s >= 6) {
     return { kind: 'bank', lesson: ranked[0].l, why: `Ça ressemble à la leçon « ${ranked[0].l.title} », déjà prête.` };
   }
 
