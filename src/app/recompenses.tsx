@@ -36,18 +36,18 @@ export default function RecompensesScreen() {
             <Chip>
               {univers.currencySymbol} {progress.coins} {univers.currency}
             </Chip>
-            <Chip>🔥 {progress.streak.count} jour{progress.streak.count > 1 ? 's' : ''}</Chip>
+            <Chip>🔥 {progress.streak.count}/7 jours</Chip>
             <Chip>🎯 {missionsDone(progress)} mission{missionsDone(progress) > 1 ? 's' : ''}</Chip>
           </View>
 
           <Card>
-            <Title size="md">Ma série</Title>
+            <Title size="md">Mon rythme</Title>
             <Body muted>
               {progress.streak.count === 0
-                ? 'Joue une mission aujourd\'hui pour lancer ta série. Un jour sans jouer est pardonné.'
+                ? 'Joue une mission aujourd\'hui : chaque jour de la semaine compte, et rien ne se perd si tu sautes un jour.'
                 : nextMilestone
-                  ? `Encore ${nextMilestone - progress.streak.count} jour${nextMilestone - progress.streak.count > 1 ? 's' : ''} pour fêter les ${nextMilestone} jours.`
-                  : 'Série légendaire !'}
+                  ? `${progress.streak.count} jour${progress.streak.count > 1 ? 's' : ''} sur 7. Encore ${nextMilestone - progress.streak.count} pour fêter ${nextMilestone} jours cette semaine.`
+                  : '7 jours sur 7, quel rythme !'}
             </Body>
             <View style={styles.milestones}>
               {STREAK_MILESTONES.map((m) => {

@@ -4,7 +4,7 @@
  * en boîte 1 après un échec, même jour sans effet.
  * Lancer : node --experimental-strip-types --no-warnings --import ./scripts/node-ts-loader.mjs scripts/check-progress.mts
  */
-import { EMPTY_PROGRESS, LEITNER_DAYS, applyMission, masteryState, type MissionResult, type Progress } from '../src/profile/progress.ts';
+import { EMPTY_PROGRESS, LEITNER_DAYS, applyMission, masteryState, weekDays, type MissionResult, type Progress } from '../src/profile/progress.ts';
 
 const failures: string[] = [];
 function expect(name: string, got: unknown, want: unknown) {
@@ -40,6 +40,13 @@ expect('échec : retour en boîte 1 dès le lendemain, plus acquis', [p.mastery.
 for (const [day, score] of [['2026-11-15', 100], ['2026-11-18', 100], ['2026-11-25', 100], ['2026-12-09', 100]] as const) p = play(p, day, score);
 expect('cinquième boîte plafonnée : retour J+30', [p.mastery.L.box, p.mastery.L.due], [5, '2027-01-08']);
 expect('intervalles', LEITNER_DAYS, [1, 3, 7, 14, 30]);
+
+// Rythme de la semaine : jours joués sur les 7 derniers, sans série qui se casse
+expect('rythme : 3 jours joués sur 7 au 2026-10-10 (6, 7 et 10)', weekDays(p, '2026-10-10'), 3);
+expect('rythme : un jour sauté ne remet rien à zéro', weekDays(p, '2026-10-12'), 3);
+expect('rythme : les jours trop anciens sortent, les jours à venir ne comptent pas', weekDays(p, '2026-10-14'), 1);
+expect('rythme : vu de bien plus tard, 0', weekDays(p, '2027-02-01'), 0);
+expect('série affichée = rythme', p.streak.count, weekDays(p, '2026-12-09'));
 
 // Anciens progrès sans boîte : déduite des parties jouées
 const old: Progress = { ...EMPTY_PROGRESS, mastery: { L: { best: 90, plays: 2, lastDay: '2026-10-01', due: '2026-10-04' } } };

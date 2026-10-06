@@ -31,10 +31,16 @@ Ce fichier est lu par chaque session de Claude Code. Il fixe ce qui ne se discut
 
 ## Pédagogie
 
-- Difficulté réglée pour réussir environ 8 fois sur 10.
-- Se tester plutôt que relire ; révision espacée (J+1, J+3, J+7) ; notions mélangées.
-- Un nouveau jeu toutes les une à deux minutes, séances de 5 à 10 minutes.
-- Tout ce qui est écrit à l'écran peut être lu à voix haute, pour ceux qui lisent peu.
+Référence : `docs/recherche-apprendre-en-jouant.md` (programmes 2024-2025, recherche sur les 6-11 ans, 28 décisions numérotées). Toute modification des jeux, du prompt, de la motivation ou de la révision cite le numéro de la décision qu'elle applique.
+
+- Difficulté réglée pour réussir 8 fois sur 10 : du facile au difficile, échauffement facile, fin sur une réussite ; après deux erreurs d'affilée on redescend, après trois on quitte la notion pour la séance.
+- Récupération guidée plutôt que test sec : indices et choix pour les petits, un ou deux jeux de production sur ce qui vient d'être vu. À chaque erreur, la bonne réponse et le pourquoi tout de suite, qui parlent de la méthode et jamais de l'enfant, puis l'exercice revient.
+- Révision espacée en cinq boîtes (J+1, J+3, J+7, J+14, J+30), au moins un jour d'écart ; une leçon n'est acquise qu'après trois réussites à des jours différents, jamais après un seul bon score. Entrelacer en maths et entre notions proches ; bloquer d'abord les mots nouveaux par petits paquets.
+- Un nouveau jeu toutes les une à deux minutes, séances de 5 à 10 minutes, jamais de second objectif après la fin.
+- Au CP, le son de la lettre et jamais son nom, des mots déchiffrables à 100 % avec ce qui a été vu, aucun contre-exemple.
+- Pas de vies, pas de chronomètre visible avant l'exactitude, pas de récompense annoncée avant un exercice, pas de série qui angoisse : la collection se découvre après coup.
+- Un choix a 3 propositions, dont 2 erreurs typiques d'enfant ; la question est à l'affirmative. Nombres et longueur des phrases dans la plage de la classe.
+- Tout ce qui est écrit à l'écran peut être lu à voix haute, pour ceux qui lisent peu. Lire, réciter, épeler se font à voix haute par l'enfant.
 
 ## Organisation du code
 

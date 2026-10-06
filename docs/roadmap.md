@@ -38,12 +38,12 @@ Pour que l'appli ne coûte presque rien à faire tourner, l'intelligence artific
 
 ## Ce que la recherche demande encore (voir les 28 décisions du rapport)
 
-Fait dans la PR 20 : décisions 2 (en partie : réussite visée, fin facile), 3, 4, 5, 6 (collection non annoncée, déjà le cas), 7, 9, 11, 13, 18, 20, 21 côté fabrication des jeux par Claude ; 4 et 22 côté révision espacée.
+Fait dans la PR 20 : décisions 3, 5, 6 (collection non annoncée, déjà le cas), 7, 9, 11, 13, 18, 20, 21 côté fabrication des jeux par Claude ; 4 et 22 côté révision espacée ; 2 et 8 côté séance (`src/content/session.ts` : échauffement, escalier, allègement après deux erreurs, sortie de la production après trois, clôture sur une réussite) ; 16 (rythme de la semaine à la place de la série), 17 (chronomètre sans alarme) et 23 (espace parent sans pourcentage, un piège, une action).
 
 À faire, par ordre d'effet :
 
-1. **Séance composée** (décision 8) : 4 à 6 jeux, moitié sur la leçon du jour, un tiers de retours échus, le reste sur des notions sûres en échauffement et en fin ; arrêt à 10 minutes ; jamais sur une erreur.
-2. **Escalier de difficulté** (décision 2) : un palier par exercice (choix < complétion < production), monter après 3 réussites, descendre après 2 erreurs, quitter la notion après 3 erreurs d'affilée.
+1. **Retours échus dans la séance** (décision 8, suite) : un tiers de la séance pris dans les leçons arrivées à échéance, en plus de l'échauffement et de la clôture déjà en place ; arrêt à 10 minutes.
+2. **Monter d'un palier après trois réussites** (décision 2, suite) : la descente existe, la montée demande des exercices de plusieurs paliers pour une même notion dans la banque.
 3. **Lire à voix haute** (décision 10) : fiche de son, fluence d'une minute sur un texte connu, poésie, avec reconnaissance vocale et feedback neutre en cas de doute. C'est l'étape 4 de la feuille de route.
 4. **Fiche de son au CP** (décision 18) : jeux par règles sur le son (entendre, repérer, assembler des syllabes, dicter), déchiffrable à 100 %, sans Claude.
 5. **Pièges par type d'erreur** (décision 9) : chaque distracteur porte son erreur type, le journal « Mes pièges » compte par type (son, lettre muette, accord, retenue).
