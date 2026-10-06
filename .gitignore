@@ -42,3 +42,6 @@ example
 /ios
 /android
 .env
+
+# Supabase CLI (projet lié, fichiers locaux)
+supabase/.temp/
