@@ -6,13 +6,18 @@ import type { Lesson, Level } from './types';
  * Lien avec le serveur Supabase. Les deux valeurs viennent du fichier .env
  * (EXPO_PUBLIC_SUPABASE_URL et EXPO_PUBLIC_SUPABASE_ANON_KEY). La clé anon est
  * faite pour être dans l'appli ; la clé Anthropic, elle, reste sur le serveur.
+ *
+ * Pendant les tests, EXPO_PUBLIC_ANALYSE_URL désigne le pont local sur le Mac
+ * (`npm run pont`), qui passe par Claude Code : même requête, même réponse,
+ * et il a la priorité sur Supabase quand il est défini. Voir docs/serveur.md.
  */
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+const bridgeUrl = process.env.EXPO_PUBLIC_ANALYSE_URL?.trim().replace(/\/$/, '') || null;
 
-export const serverReady = Boolean(url && anonKey);
+const supabase = url && anonKey ? createClient(url, anonKey, { auth: { persistSession: false } }) : null;
 
-const supabase = serverReady ? createClient(url!, anonKey!, { auth: { persistSession: false } }) : null;
+export const serverReady = Boolean(bridgeUrl) || supabase !== null;
 
 export type AnalyseResult = { lesson: Lesson; warning: string | null; dropped: number };
 
@@ -22,8 +27,31 @@ function isLesson(value: unknown): value is Lesson {
   return typeof l.id === 'string' && typeof l.title === 'string' && Array.isArray(l.exercises) && l.exercises.length > 0;
 }
 
+function toResult(data: { lesson?: unknown; warning?: unknown; dropped?: unknown } | null, from: string): AnalyseResult {
+  if (!data || !isLesson(data.lesson)) throw new Error(`Réponse ${from} inattendue.`);
+  return { lesson: data.lesson, warning: typeof data.warning === 'string' ? data.warning : null, dropped: Number(data.dropped ?? 0) };
+}
+
+/** Le pont local répond comme la fonction serveur : { lesson, warning, dropped } ou { error } */
+async function analyseViaBridge(image: string, mediaType: string, level: Level): Promise<AnalyseResult> {
+  let res: Response;
+  try {
+    res = await fetch(`${bridgeUrl}/analyser-photo`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image, mediaType, level }),
+    });
+  } catch {
+    throw new Error('Le pont local ne répond pas. Vérifie que « npm run pont » tourne sur le Mac et que le téléphone est sur le même Wi-Fi.');
+  }
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(String(data?.error ?? `Le pont local a répondu ${res.status}.`));
+  return toResult(data, 'du pont local');
+}
+
 /** Envoie la photo (base64) au serveur et reçoit une leçon jouable. La photo n'est pas conservée. */
 export async function analysePhoto(image: string, mediaType: string, level: Level): Promise<AnalyseResult> {
+  if (bridgeUrl) return analyseViaBridge(image, mediaType, level);
   if (!supabase) throw new Error('Le serveur n\'est pas encore branché (fichier .env manquant).');
   const { data, error } = await supabase.functions.invoke('analyser-photo', { body: { image, mediaType, level } });
   if (error) {
@@ -35,6 +63,5 @@ export async function analysePhoto(image: string, mediaType: string, level: Leve
     }
     throw new Error('Le serveur n\'a pas répondu. Vérifie la connexion et réessaie.');
   }
-  if (!data || !isLesson(data.lesson)) throw new Error('Réponse du serveur inattendue.');
-  return { lesson: data.lesson, warning: data.warning ?? null, dropped: Number(data.dropped ?? 0) };
+  return toResult(data, 'du serveur');
 }

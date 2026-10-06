@@ -33,6 +33,6 @@ Pour que l'appli ne coûte presque rien à faire tourner, l'intelligence artific
 1. **Banque d'exercices par notion du programme**, écrite une fois (avec Claude pendant le développement, relue à la main). Gratuit à l'usage.
 2. **Lecture du texte sur le téléphone** (reconnaissance intégrée à iOS et Android), puis reconnaissance de la notion et jeux fabriqués par règles : mots de dictée, poésie, tables, listes. Gratuit. Voir `src/content/generate.ts`.
 3. **IA du téléphone** (Apple Intelligence, Gemini Nano) quand elle existe, pour reconnaître une notion ou reformuler une consigne. Gratuit.
-4. **Claude côté serveur** seulement pour ce que les trois premiers ne savent pas faire, avec un quota par famille et une mémoire des pages déjà lues. Quelques centimes par photo (`docs/serveur.md`).
+4. **Claude côté serveur** seulement pour ce que les trois premiers ne savent pas faire, avec un quota par famille et une mémoire des pages déjà lues. Quelques centimes par photo (`docs/serveur.md`). Pendant le développement, le pont local (`scripts/pont-claude.mts`) remplace le serveur et passe par l'abonnement Claude du développeur, pour ses propres photos seulement.
 
 Ensuite : autres niveaux, autres matières, classe partagée, mode sans écran, histoire du soir, appel de Gribouille, ardoise réelle.
