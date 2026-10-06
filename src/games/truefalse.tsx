@@ -36,7 +36,7 @@ export function TrueFalseGame({ exercise, onAnswer, done }: GameProps<TrueFalseE
     <View style={styles.wrap}>
       <Prompt text="Vrai ou faux ?" speakText={exercise.statement} />
       <View style={[styles.timer, { backgroundColor: c.line }]}>
-        <View style={[styles.timerFill, { width: `${(left / SECONDS) * 100}%`, backgroundColor: left <= 2 ? c.ko : c.sun }]} />
+        <View style={[styles.timerFill, { width: `${(left / SECONDS) * 100}%`, backgroundColor: c.sun }]} />
       </View>
       <Text style={[styles.statement, { color: c.ink, fontWeight: univers.font.weight }]}>{exercise.statement}</Text>
       {left === 0 && !done && <Body muted style={styles.center}>Le temps est écoulé, mais tu peux encore répondre.</Body>}
