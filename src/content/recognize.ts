@@ -66,7 +66,6 @@ export function calcLesson(input: { ops: Op[]; level: Level; title?: string }): 
   const ops = input.ops.slice(0, 16);
   const id = `calc-${Date.now().toString(36)}`;
   const results = ops.map((o) => o.result);
-  const mult = ops.some((o) => o.op === '×');
   const exercises: Exercise[] = [];
 
   ops.slice(0, 3).forEach((o, i) => {
@@ -141,7 +140,9 @@ export function calcLesson(input: { ops: Op[]; level: Level; title?: string }): 
     explain: `${label(ops[ops.length - 1])} = ${ops[ops.length - 1].result}.`,
   });
 
-  const title = input.title?.trim() || (mult ? 'Mes multiplications' : ops.every((o) => o.op === '+') ? 'Mes additions' : 'Mes calculs');
+  // Un titre précis seulement quand toute la page est du même type, sinon « Mes calculs »
+  const only = (op: Op['op']) => ops.every((o) => o.op === op);
+  const title = input.title?.trim() || (only('×') ? 'Mes multiplications' : only('+') ? 'Mes additions' : only('-') ? 'Mes soustractions' : 'Mes calculs');
   return {
     id,
     title,

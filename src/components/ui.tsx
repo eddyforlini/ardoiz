@@ -87,18 +87,19 @@ export function Button({ label, variant = 'primary', style, ...rest }: ButtonPro
   return (
     <Pressable
       accessibilityRole="button"
-      style={({ pressed }) => [
+      style={(state) => [
         styles.button,
         {
           backgroundColor: palette.bg,
           borderRadius: Math.max(10, univers.font.radius - 4),
-          borderBottomWidth: pressed ? 1 : 5,
+          borderBottomWidth: state.pressed ? 1 : 5,
           borderBottomColor: palette.shadow,
-          marginTop: pressed ? 4 : 0,
+          marginTop: state.pressed ? 4 : 0,
           borderWidth: univers.id === 'hero' ? 3 : 0,
           borderColor: c.line,
         },
-        typeof style === 'function' ? style({ pressed }) : style,
+        // L'état complet (pressed, et hovered sur le web) est transmis au style reçu en prop
+        typeof style === 'function' ? style(state) : style,
       ]}
       {...rest}>
       <Text
