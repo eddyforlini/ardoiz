@@ -40,7 +40,7 @@ export default function HomeScreen() {
             <Chip>
               {univers.currencySymbol} {progress.coins} {univers.currency}
             </Chip>
-            <Chip>🔥 {progress.streak.count} jour{progress.streak.count > 1 ? 's' : ''}</Chip>
+            <Chip>🔥 {progress.streak.count}/7 jours</Chip>
             <Link href="/univers" asChild>
               <Pressable accessibilityRole="button" accessibilityLabel="Changer d'univers">
                 <Chip>{univers.name} ▾</Chip>

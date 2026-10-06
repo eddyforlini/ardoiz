@@ -8,14 +8,13 @@ import { Gribouille } from '@/components/gribouille';
 import { Body, Button, Card, Chip, Screen, Title } from '@/components/ui';
 import { useLessons } from '@/content/LessonsProvider';
 import { speak, stopSpeaking } from '@/content/speech';
-import type { Exercise, Lesson } from '@/content/types';
+import { buildQueue, dropHard, easeRemaining, offeredIds, pickClosing, type Step } from '@/content/session';
+import type { Lesson } from '@/content/types';
 import { SUBJECT_LABEL } from '@/content/types';
 import { GAME_LABEL, Game } from '@/games';
-import { COINS_PER_GOOD, PIEGES_ID, QUEST_REWARD, missionReason, type MissionReward, type Progress } from '@/profile/progress';
+import { COINS_PER_GOOD, PIEGES_ID, QUEST_REWARD, masteryState, missionReason, type MissionReward, type Progress } from '@/profile/progress';
 import { useProgress } from '@/profile/ProgressProvider';
 import { useUnivers } from '@/univers/UniversProvider';
-
-type Step = { exercise: Exercise; retry: boolean };
 
 /** Mission « Mes pièges » : les exercices ratés de l'enfant, toutes leçons mêlées */
 function buildPieges(progress: Progress, all: Lesson[]): Lesson | undefined {
@@ -36,9 +35,13 @@ function buildPieges(progress: Progress, all: Lesson[]): Lesson | undefined {
 }
 
 /**
- * Déroulé d'une mission : un exercice après l'autre, feedback après chaque
- * réponse, les exercices ratés reviennent une fois en fin de mission
- * (règle produit 5 : l'erreur n'est pas grave, on a une seconde chance).
+ * Déroulé d'une mission : un échauffement facile, puis les exercices du
+ * plus facile au plus difficile, feedback après chaque réponse, les
+ * exercices ratés reviennent une fois en fin de mission (règle produit 5 :
+ * l'erreur n'est pas grave, on a une seconde chance). Deux erreurs
+ * d'affilée font passer le plus facile devant, trois font quitter la
+ * production, et la mission se clôt toujours sur une réussite
+ * (docs/recherche-apprendre-en-jouant.md, décisions 2, 3 et 8).
  */
 export default function MissionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -48,9 +51,12 @@ export default function MissionScreen() {
   const { lessons, findLesson } = useLessons();
   const [lesson] = useState(() => (id === PIEGES_ID ? buildPieges(progress, lessons) : findLesson(id)));
 
-  const [queue, setQueue] = useState<Step[]>(() =>
-    (lesson?.exercises ?? []).map((exercise) => ({ exercise, retry: false })),
-  );
+  const [queue, setQueue] = useState<Step[]>(() => {
+    if (!lesson) return [];
+    // Échauffement : un jeu facile d'une leçon acquise du même niveau, pas pour « Mes pièges »
+    const acquired = lesson.id === PIEGES_ID ? [] : lessons.filter((l) => l.id !== lesson.id && l.level === lesson.level && masteryState(progress, l.id) === 'done');
+    return buildQueue(lesson, acquired);
+  });
   const [position, setPosition] = useState(0);
   const [intro, setIntro] = useState(true);
   const [result, setResult] = useState<boolean | null>(null);
@@ -58,7 +64,12 @@ export default function MissionScreen() {
   const [firstTryErrors, setFirstTryErrors] = useState(0);
   const [attempt, setAttempt] = useState(0);
   const [wrongIds, setWrongIds] = useState<string[]>([]);
+  /** Erreurs d'affilée au premier essai, pour l'escalier */
+  const [errorRun, setErrorRun] = useState(0);
+  const [closed, setClosed] = useState(false);
   const finished = position >= queue.length && queue.length > 0;
+  const offered = offeredIds(queue);
+  const rightIds = offered.filter((eid) => !wrongIds.includes(eid));
   const step = queue[position];
   const played = useMemo(() => new Set(queue.slice(0, position).map((s) => s.exercise.kind)), [queue, position]);
   const [reward, setReward] = useState<MissionReward | null>(null);
@@ -82,14 +93,17 @@ export default function MissionScreen() {
   function answer(correct: boolean) {
     if (result !== null) return;
     setResult(correct);
+    const counts = step.role === 'lesson' || step.role === 'retry';
     if (correct) {
-      setGood((g) => g + 1);
+      if (counts) setGood((g) => g + 1);
+      if (step.role === 'lesson') setErrorRun(0);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       speak(univers.tone === 'ado' ? 'Bien joué.' : 'Bravo !');
     } else {
-      if (!step.retry) {
+      if (step.role === 'lesson') {
         setFirstTryErrors((e) => e + 1);
         setWrongIds((w) => [...w, step.exercise.id]);
+        setErrorRun((n) => n + 1);
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       if (step.exercise.explain) speak(step.exercise.explain);
@@ -98,20 +112,32 @@ export default function MissionScreen() {
 
   function next() {
     stopSpeaking();
-    const retryNeeded = result === false && !step.retry;
-    if (retryNeeded) setQueue((q) => [...q, { exercise: step.exercise, retry: true }]);
-    const last = !retryNeeded && position + 1 >= queue.length;
+    let q = queue;
+    const retryNeeded = result === false && step.role === 'lesson';
+    if (retryNeeded) q = [...q, { exercise: step.exercise, role: 'retry' }];
+    // Escalier : deux erreurs d'affilée, le plus facile passe devant ; trois, on quitte la production pour la séance
+    if (retryNeeded && errorRun === 2) q = easeRemaining(q, position);
+    if (retryNeeded && errorRun >= 3) q = dropHard(q, position);
+    // Jamais finir sur une erreur : un jeu facile déjà réussi, rejoué pour clore
+    if (position + 1 >= q.length && result === false && step.role === 'retry' && !closed) {
+      setClosed(true);
+      const closing = pickClosing(q, rightIds);
+      if (closing) q = [...q, { exercise: closing, role: 'closing' }];
+    }
+    if (q !== queue) setQueue(q);
+    const last = position + 1 >= q.length;
     if (last && lesson && !reward) {
       // Fin de mission : on enregistre une seule fois et on garde ce qui est gagné pour l'écran de fin
+      const finalOffered = offeredIds(q);
       setReward(
         recordMission({
           lessonId: lesson.id,
           good,
-          total: lesson.exercises.length,
+          total: finalOffered.length,
           firstTryErrors,
-          kinds: [...new Set(queue.map((q) => q.exercise.kind))],
+          kinds: [...new Set(q.map((s) => s.exercise.kind))],
           wrongIds,
-          rightIds: lesson.exercises.map((e) => e.id).filter((eid) => !wrongIds.includes(eid)),
+          rightIds: finalOffered.filter((eid) => !wrongIds.includes(eid)),
         }),
       );
     }
@@ -205,7 +231,7 @@ export default function MissionScreen() {
               <View style={styles.statRow}>
                 <Body muted>Bonnes réponses</Body>
                 <Body bold>
-                  {good} / {queue.length}
+                  {good} / {offered.length}
                 </Body>
               </View>
               <View style={styles.statRow}>
@@ -229,7 +255,7 @@ export default function MissionScreen() {
               )}
               {reward && reward.streak > 0 && (
                 <Body bold>
-                  🔥 Série : {reward.streak} jour{reward.streak > 1 ? 's' : ''}
+                  🔥 {reward.streak} jour{reward.streak > 1 ? 's' : ''} sur 7 cette semaine
                 </Body>
               )}
               {reward?.questsCompleted.map((q) => (
@@ -308,7 +334,9 @@ export default function MissionScreen() {
             <Body muted>
               {SUBJECT_LABEL[lesson.subject]} · {GAME_LABEL[step.exercise.kind]}
             </Body>
-            {step.retry && <Chip style={{ backgroundColor: c.primaryTint }}>Seconde chance</Chip>}
+            {step.role === 'retry' && <Chip style={{ backgroundColor: c.primaryTint }}>Seconde chance</Chip>}
+            {step.role === 'warmup' && <Chip style={{ backgroundColor: c.primaryTint }}>Échauffement</Chip>}
+            {step.role === 'closing' && <Chip style={{ backgroundColor: c.primaryTint }}>Pour finir en beauté</Chip>}
           </View>
 
           <Card>
@@ -324,10 +352,17 @@ export default function MissionScreen() {
                     {result ? univers.words.bravo : 'Pas tout à fait'}
                   </Title>
                   {!result && step.exercise.explain && <Body>{step.exercise.explain}</Body>}
-                  {!result && !step.retry && <Body muted>On la refera à la fin de la mission.</Body>}
+                  {!result && step.role === 'lesson' && <Body muted>On la refera à la fin de la mission.</Body>}
                 </View>
               </View>
-              <Button label={position + 1 >= queue.length && !(result === false && !step.retry) ? 'Voir le résultat' : 'Continuer'} onPress={next} />
+              <Button
+                label={
+                  position + 1 >= queue.length && !(result === false && step.role === 'lesson') && !(result === false && step.role === 'retry' && !closed && pickClosing(queue, rightIds))
+                    ? 'Voir le résultat'
+                    : 'Continuer'
+                }
+                onPress={next}
+              />
             </Card>
           )}
         </ScrollView>

@@ -77,7 +77,8 @@ export function SpeedGame({ exercise, onAnswer, done }: GameProps<SpeedExercise>
     <View style={styles.wrap}>
       <Prompt text={exercise.prompt} />
       <View style={[styles.timer, { backgroundColor: c.line }]}>
-        <View style={[styles.timerFill, { width: `${(left / exercise.seconds) * 100}%`, backgroundColor: left <= 5 ? c.ko : c.sun }]} />
+        {/* Le temps qui passe, sans alarme rouge : la précision d'abord, la vitesse contre soi-même (décision 17) */}
+        <View style={[styles.timerFill, { width: `${(left / exercise.seconds) * 100}%`, backgroundColor: c.sun }]} />
       </View>
       <View style={styles.row}>
         <Body bold>

@@ -3,18 +3,31 @@
 // de sa réponse, et la vérification qui écarte les exercices incohérents.
 // Aucune dépendance externe ici, pour que les deux environnements l'importent.
 
-export const SYSTEM = `Tu transformes la photo d'une page d'école française (leçon, liste de mots, poésie, exercice, cahier) en une leçon jouable pour l'application Ardoiz. Tout est en français.
+export const SYSTEM = `Tu transformes la photo d'une page d'école française (leçon, fiche de son, liste de mots, poésie, cahier de textes avec les devoirs, exercice) en une leçon jouable pour l'application Ardoiz, pour un enfant de l'école élémentaire (CP à CM2). Tout est en français. Les règles ci-dessous viennent des programmes officiels et de la recherche sur l'apprentissage des 6-11 ans (docs/recherche-apprendre-en-jouant.md).
+
+Ce que la page peut être, et ce qu'on en fait :
+- Fiche de son ou de graphème (CP, début CE1) : le son étudié, ses graphies, les syllabes, les mots et la phrase de la fiche. Jeux SUR CE SON : repérer les mots où on l'entend (choice ou tapword), assembler des syllabes de 2 ou 3 lettres (scramble), écrire des syllabes ou des mots simples dictés (dictation), vrai ou faux « on entend [a] dans "papa" » (truefalse), associer syllabes et mots (pairs). Toujours le son de la lettre, jamais son nom ; aucun contre-exemple (pas de lettre muette, pas de graphie rare) ; uniquement des mots déchiffrables avec ce que la fiche montre.
+- Cahier de textes ou liste de devoirs : repère ce qu'il y a à apprendre (fiche de son n°, mots à savoir écrire, table, poésie, leçon) et fabrique les jeux là-dessus. Ignore les consignes matérielles (trousse, gourde, signer, lignage). Dis dans warning ce que tu as retenu de la page.
+- Liste de mots de dictée : mémoriser l'orthographe : flash, scramble, choice entre graphies concurrentes plausibles, dictation, fix. Rester sur 5 ou 6 mots dans toute la mission, les mêmes d'un jeu à l'autre.
+- Poésie : order (vers dans l'ordre), blanks, choice (rimes), fix. Les mots exacts du texte.
+- Leçon, lecture, histoire, sciences : truefalse, choice, blanks, sort, sentence. Des questions dont la réponse est écrite dans la page, et une ou deux inférences simples (« c'est écrit » ou « je l'ai deviné »).
+- Grammaire, conjugaison : tapword (touche le verbe, le sujet), sort (trier par nature), sentence, truefalse, fix, choice de la bonne terminaison.
+- Calcul : speed (6 à 10 calculs mélangés, 45 secondes, target 6), pairs, truefalse, count, fix, choice. Mélange les types (addition et soustraction, tables dans les deux sens : « 7 × ? = 56 »).
+- Numération : numberline (min, max, step cohérents, la réponse sur une graduation), choice (comparer), count, truefalse.
+- Problèmes : énoncé bref, choice sur l'opération à faire ou sur le résultat, un nombre à la fois ; parfois un mot trompeur (« total » alors qu'on soustrait) ou une donnée inutile, et une question « combien reste-t-il ? » lisible.
 
 Règles :
-- Le contenu est neutre et fidèle à la page : mêmes mots, mêmes vers, mêmes notions, même niveau. N'invente pas de contenu absent de la page, sauf les mauvaises propositions (distracteurs) et les explications.
-- Une erreur n'est jamais grave : chaque exercice a une explication courte, concrète et encourageante.
-- Varie les jeux : 5 à 8 exercices, du plus facile au plus difficile, jamais deux fois le même jeu à la suite.
-- Jeux selon la page : poésie → order (vers dans l'ordre), blanks, choice (rimes), fix. Mots de dictée → scramble, flash, dictation, choice (bonne écriture), fix. Grammaire ou conjugaison → tapword, sort, sentence, truefalse, fix. Calcul → speed (6 à 10 calculs, 45 secondes, target 6), pairs, truefalse, count, fix. Numération → numberline (min, max, step cohérents, answer sur une graduation), choice (comparer), count, truefalse. Leçon ou lecture → truefalse, choice, blanks, sort, sentence.
-- Pour blanks, les trous sont écrits {{mot}} dans text, avec 2 à 4 trous et 2 distracteurs.
-- Pour fix, words contient la phrase avec une faute plausible de l'enfant à l'index wrongIndex, correct est le bon mot, distractors deux autres mauvaises écritures.
-- Pour count, answer entre 4 et 15, numberOptions contient la réponse et deux voisins.
-- Niveau : adapte la difficulté au niveau indiqué par le parent, sauf si la page montre clairement un autre niveau.
-- Si la photo est illisible, floue, ou n'est pas une page scolaire, mets readable à false et explique dans warning, avec exercises vide.`;
+1. Fidélité : le contenu est neutre et fidèle à la page : mêmes mots, mêmes vers, mêmes nombres, mêmes notions, même niveau. N'invente pas de contenu absent de la page, sauf les mauvaises propositions (distracteurs) et les explications.
+2. Niveau : respecte les bornes du niveau indiqué par le parent, sauf si la page montre clairement un autre niveau. CP : nombres jusqu'à 100, phrases de 8 mots au plus, mots courts et déchiffrables, consignes très simples. CE1 : nombres jusqu'à 1 000, phrases de 12 mots. CE2 : jusqu'à 10 000, 15 mots. CM1 : nombres à 6 chiffres, décimaux jusqu'aux centièmes, 20 mots. CM2 : 9 chiffres, millièmes, 20 mots. Le vocabulaire des consignes est celui de la classe, concret, sans mot savant.
+3. Réussite huit fois sur dix : les jeux vont du plus facile au plus difficile, le premier est presque gagné d'avance, et le dernier redevient facile pour finir sur une réussite. Au CP et au CE1, toujours des indices : des choix plutôt que de la production libre, avec un ou deux jeux de production (dictation, scramble) seulement sur ce qui vient d'être vu dans les jeux précédents.
+4. Bonne réponse (choice) : exactement 3 propositions. Les 2 mauvaises sont des erreurs typiques d'enfant : résultat d'une procédure fautive (plus ou moins 1, plus ou moins 10, retenue oubliée, nombres inversés), graphie concurrente du même son, mot de la même catégorie, terminaison homophone (-é, -er, -ez). Jamais une proposition absurde, jamais deux propositions qui ne diffèrent que par un accent au CP. La question est à l'affirmative : pas de « ne … pas », pas de « toujours », « jamais », « aucune », « toutes ». Les propositions ont des longueurs semblables.
+5. Vrai ou faux : une affirmation positive, courte, une seule idée. Quand elle est fausse, c'est une confusion plausible (le voisin d'une table, l'autre graphie d'un son, l'événement d'avant), pas une absurdité.
+6. Explication (explain) : la bonne réponse et le pourquoi en une phrase courte, lisible à voix haute, qui parle de la méthode (« regarde la fin du mot », « 7 × 8, c'est 7 × 7 plus 7 », « on entend [a] à la fin de papa »), jamais de l'enfant.
+7. Variété : 5 à 8 jeux, jamais deux fois le même d'affilée, au moins un jeu de production (dictation, scramble, blanks, sentence, fix). En mathématiques, mélanger les types de calcul dans une même mission. Pour des mots nouveaux, rester sur les mêmes mots dans toute la mission.
+8. Tout se lit à voix haute : consignes et propositions sans abréviation, sans symbole autre que + − × = ; écrire « 7 × 8 », pas « 7x8 » ; écrire les sons entre crochets, par exemple [a].
+9. Formats : blanks : trous notés {{mot}} dans text, 2 à 4 trous d'une seule notion, 2 distracteurs. fix : words contient la phrase avec une faute plausible de l'enfant à l'index wrongIndex, correct est le bon mot, distractors deux autres mauvaises écritures. count : réponse entre 4 et 15, numberOptions contient la réponse et deux voisins. speed : items avec des calculs mélangés. pairs : 4 à 6 paires. sort : 2 ou 3 boîtes, 4 à 8 mots. sentence : 3 à 9 mots. order : 3 à 6 lignes.
+10. Résumé (summary) : la leçon racontée à l'enfant en deux ou trois phrases simples, lisibles à voix haute. Avertissement (warning) : ce que le parent doit vérifier, en une ou deux phrases, ou ce que tu as retenu d'une page de devoirs ; null s'il n'y a rien à dire.
+11. Si la photo est illisible, floue, ou n'est pas une page scolaire, mets readable à false et explique dans warning, avec exercises vide.`;
 
 export const KINDS = ['choice', 'truefalse', 'numberline', 'scramble', 'flash', 'order', 'blanks', 'speed', 'sort', 'tapword', 'sentence', 'dictation', 'count', 'pairs', 'fix'] as const;
 export const SUBJECTS = ['maths', 'francais'] as const;
@@ -98,7 +111,7 @@ export const LESSON_JSON_SCHEMA = {
           kind: { type: 'string', enum: [...KINDS] },
           explain: { type: 'string', description: 'Explication courte et bienveillante montrée après une erreur' },
           prompt: nullable('string', 'Consigne (choice, numberline, order, blanks, speed, sort, tapword, sentence, count, pairs, fix)'),
-          options: nullableList(str, 'choice : 2 à 4 propositions'),
+          options: nullableList(str, 'choice : exactement 3 propositions'),
           answerIndex: nullable('integer', 'choice : index de la bonne proposition'),
           statement: nullable('string', 'truefalse : affirmation'),
           answerBool: nullable('boolean', 'truefalse : vrai ou faux'),
@@ -137,23 +150,74 @@ function clean(s: string | null | undefined): string {
   return (s ?? '').trim();
 }
 
+/**
+ * Bornes par niveau : les nombres viennent des programmes 2024 et 2025
+ * (CP ≤ 100, CE1 ≤ 1 000, CE2 ≤ 10 000, CM1 6 chiffres, CM2 9 chiffres) ;
+ * la longueur des consignes est une inférence à partir des longueurs de
+ * textes attendues, large pour ne pas rejeter une question honnête.
+ */
+const LIMITS: Record<string, { maxNumber: number; maxWords: number }> = {
+  CP: { maxNumber: 100, maxWords: 14 },
+  CE1: { maxNumber: 1000, maxWords: 18 },
+  CE2: { maxNumber: 10_000, maxWords: 22 },
+  CM1: { maxNumber: 999_999, maxWords: 26 },
+  CM2: { maxNumber: 999_999_999, maxWords: 26 },
+};
+const DEFAULT_LIMITS = { maxNumber: 999_999_999, maxWords: 30 };
+
+function limitsFor(level: string) {
+  return LIMITS[level] ?? DEFAULT_LIMITS;
+}
+
+function wordCount(s: string): number {
+  return s.split(/\s+/).filter(Boolean).length;
+}
+
+/** Question à la négative ou avec un absolu : à écarter (règles de Haladyna, confusion chez les petits) */
+const NEGATIVE_STEM = /\b(jamais|toujours|aucune?|toutes? les)\b|\bne\b[^.?!]{0,40}\bpas\b|\bn'[a-zéèê]+\s+(pas|plus|jamais)\b/i;
+
+function badStem(s: string, maxWords: number): boolean {
+  return NEGATIVE_STEM.test(s) || wordCount(s) > maxWords;
+}
+
+/** Les nombres cités dans un texte d'exercice doivent rester dans la plage du niveau */
+function numbersWithin(s: string, maxNumber: number): boolean {
+  const found = s.match(/\d[\d\s]*(?:[.,]\d+)?/g) ?? [];
+  return found.every((n) => Number(n.replace(/\s/g, '').replace(',', '.')) <= maxNumber);
+}
+
+/** Ramène un choix à 3 propositions : la bonne et deux distracteurs, sans changer la réponse */
+function threeOptions(options: string[], answer: number): { options: string[]; answer: number } {
+  if (options.length <= 3) return { options, answer };
+  const correct = options[answer];
+  const others = options.filter((_, i) => i !== answer).slice(0, 2);
+  const kept = [...others.slice(0, Math.min(answer, 2)), correct, ...others.slice(Math.min(answer, 2))];
+  return { options: kept, answer: kept.indexOf(correct) };
+}
+
 /** Passe du schéma plat au modèle de l'appli, en écartant les exercices incohérents */
-export function normalize(e: RawExercise, index: number, lessonId: string): Record<string, unknown> | null {
+export function normalize(e: RawExercise, index: number, lessonId: string, level = 'CE1'): Record<string, unknown> | null {
   const id = `${lessonId}-${index + 1}`;
+  const { maxNumber, maxWords } = limitsFor(level);
   const base = { id, explain: clean(e.explain) || undefined };
   switch (e.kind) {
     case 'choice': {
-      const options = (e.options ?? []).map(clean).filter(Boolean);
-      if (options.length < 2 || e.answerIndex == null || e.answerIndex < 0 || e.answerIndex >= options.length) return null;
-      return { ...base, kind: 'choice', prompt: clean(e.prompt), options, answer: e.answerIndex };
+      const raw = (e.options ?? []).map(clean).filter(Boolean);
+      const prompt = clean(e.prompt);
+      if (raw.length < 2 || e.answerIndex == null || e.answerIndex < 0 || e.answerIndex >= raw.length) return null;
+      if (!prompt || badStem(prompt, maxWords) || !numbersWithin(prompt, maxNumber)) return null;
+      const { options, answer } = threeOptions(raw, e.answerIndex);
+      return { ...base, kind: 'choice', prompt, options, answer };
     }
-    case 'truefalse':
-      if (!clean(e.statement) || e.answerBool == null) return null;
-      return { ...base, kind: 'truefalse', statement: clean(e.statement), answer: e.answerBool };
+    case 'truefalse': {
+      const statement = clean(e.statement);
+      if (!statement || e.answerBool == null || badStem(statement, maxWords) || !numbersWithin(statement, maxNumber)) return null;
+      return { ...base, kind: 'truefalse', statement, answer: e.answerBool };
+    }
     case 'numberline': {
       const { min, max, step, answerNumber: answer } = e;
       if (min == null || max == null || step == null || answer == null || step <= 0 || max <= min) return null;
-      if (answer < min || answer > max || (answer - min) % step !== 0 || (max - min) / step > 20) return null;
+      if (answer < min || answer > max || (answer - min) % step !== 0 || (max - min) / step > 20 || max > maxNumber) return null;
       return { ...base, kind: 'numberline', prompt: clean(e.prompt) || `Place le nombre ${answer}`, min, max, step, answer };
     }
     case 'scramble': {
@@ -179,7 +243,7 @@ export function normalize(e: RawExercise, index: number, lessonId: string): Reco
       return { ...base, kind: 'blanks', prompt: clean(e.prompt) || 'Complète le texte', text, distractors: (e.distractors ?? []).map(clean).filter(Boolean).slice(0, 4) };
     }
     case 'speed': {
-      const items = (e.items ?? []).filter((it) => clean(it.q) && Number.isFinite(it.a));
+      const items = (e.items ?? []).filter((it) => clean(it.q) && Number.isFinite(it.a) && Math.abs(it.a) <= maxNumber && numbersWithin(it.q, maxNumber));
       if (items.length < 4) return null;
       const seconds = e.seconds && e.seconds >= 20 ? Math.min(e.seconds, 90) : 45;
       const target = e.target && e.target > 0 ? Math.min(e.target, items.length) : Math.max(3, Math.floor(items.length * 0.6));
@@ -242,7 +306,7 @@ export function buildResponse(raw: RawLesson): BuiltResponse {
   if (!raw.readable) return { status: 422, body: { error: clean(raw.warning) || 'La photo est illisible ou n\'est pas une page d\'école.' } };
 
   const id = `photo-${Date.now().toString(36)}`;
-  const exercises = raw.exercises.map((e, i) => normalize(e, i, id)).filter((e) => e !== null);
+  const exercises = raw.exercises.map((e, i) => normalize(e, i, id, raw.level)).filter((e) => e !== null);
   if (exercises.length < 3) return { status: 422, body: { error: 'Pas assez d\'exercices utilisables, réessaie avec une photo plus nette.' } };
 
   return {

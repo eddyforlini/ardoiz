@@ -38,7 +38,13 @@ export default function ParentScreen() {
   const [confirm, setConfirm] = useState(false);
   const errors = Object.entries(progress.errors).sort((a, b) => b[1].count - a[1].count);
   const lessonsPlayed = Object.keys(progress.mastery).length;
-  const avg = lessonsPlayed ? Math.round(Object.values(progress.mastery).reduce((n, m) => n + m.best, 0) / lessonsPlayed) : 0;
+  const played = lessons.filter((l) => progress.mastery[l.id]);
+  const acquired = played.filter((l) => masteryState(progress, l.id) === 'done').length;
+  // Ce qui piège le plus : la leçon qui revient le plus souvent dans le journal des erreurs (décision 23 : pas de score global, une erreur type, une action)
+  const trapCounts = new Map<string, number>();
+  for (const e of Object.values(progress.errors)) trapCounts.set(e.lessonId, (trapCounts.get(e.lessonId) ?? 0) + e.count);
+  const trapId = [...trapCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+  const trap = trapId ? lessons.find((l) => l.id === trapId[0]) : undefined;
 
   return (
     <ParentGate>
@@ -61,14 +67,19 @@ export default function ParentScreen() {
             <Title size="md">Cette semaine</Title>
             <View style={styles.row}>
               <Chip>🎯 {missionsDone(progress)} mission{missionsDone(progress) > 1 ? 's' : ''}</Chip>
-              <Chip>🔥 {progress.streak.count} jour{progress.streak.count > 1 ? 's' : ''}</Chip>
+              <Chip>🔥 {progress.streak.count}/7 jours</Chip>
               <Chip>📚 {lessonsPlayed} leçon{lessonsPlayed > 1 ? 's' : ''} en {level}</Chip>
             </View>
             <Body muted>
               {lessonsPlayed === 0
                 ? 'Aucune mission jouée pour l\'instant.'
-                : `Maîtrise moyenne des leçons jouées : ${avg} %. Chaque leçon revient à J+1, J+3 puis J+7 après une réussite.`}
+                : `${acquired} leçon${acquired > 1 ? 's' : ''} acquise${acquired > 1 ? 's' : ''}, ${played.length - acquired} en cours. Une leçon est acquise après trois réussites à des jours différents ; elle revient à J+1, J+3, J+7, J+14 puis J+30, et dès le lendemain après une mission ratée.`}
             </Body>
+            {trap && trapId && (
+              <Body muted>
+                Ce qui piège le plus : « {trap.title} » ({trapId[1]} erreur{trapId[1] > 1 ? 's' : ''}). Une idée : relisez cette leçon avec lui cinq minutes avant la prochaine mission.
+              </Body>
+            )}
             <Button label={`🎓 Le programme de ${level}, attendu par attendu`} variant="ghost" onPress={() => router.push('/programme')} />
           </Card>
 
@@ -89,7 +100,7 @@ export default function ParentScreen() {
                     </Body>
                   </View>
                   <Chip style={{ borderColor: color }}>
-                    {MASTERY_STATE[state].glyph} {status} · {m.best} %
+                    {MASTERY_STATE[state].glyph} {status}
                   </Chip>
                 </View>
               );
