@@ -309,7 +309,8 @@ export function analyseText(raw: string, level: Level, title?: string): Recognit
     return { kind: 'bank', lesson: byTitle[0], why: `C'est la leçon « ${byTitle[0].title} », déjà prête.` };
   }
 
-  // Sinon par ressemblance, au même niveau d'abord : il faut un mot rare du titre ou de la notion et trois mots rares en tout
+  // Sinon par ressemblance, au même niveau d'abord : il faut deux mots rares du titre ou de la notion et trois mots rares en tout.
+  // Les exemples du résumé (« nos devoirs avant le dîner ») sont rares dans la banque mais courants sur une vraie page : ils ne décident pas.
   const toks = tokens(text);
   const ranked = LESSONS.map((l) => {
     const sim = scoreLesson(toks, l);
@@ -318,7 +319,7 @@ export function analyseText(raw: string, level: Level, title?: string): Recognit
     .filter((x) => x.s >= 3)
     .sort((a, b) => b.s - a.s);
   const best = ranked[0];
-  if (best && best.distinctiveCore >= 1 && best.distinctiveAll >= 3 && best.s >= 6) {
+  if (best && best.distinctiveCore >= 2 && best.distinctiveAll >= 3 && best.s >= 6) {
     return { kind: 'bank', lesson: best.l, why: `Ça ressemble à la leçon « ${best.l.title} », déjà prête.` };
   }
 

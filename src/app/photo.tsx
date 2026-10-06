@@ -20,8 +20,8 @@ type State =
   | { step: 'idle' }
   | { step: 'analysing'; uri: string; remote: boolean }
   /** base64 gardé tant qu'une lecture complète sur le serveur reste possible, pour le bouton « Pas la bonne leçon ? » */
-  | { step: 'preview'; uri: string; result: Result; base64?: string }
-  | { step: 'error'; uri: string | null; message: string };
+  | { step: 'preview'; uri: string; result: Result; base64?: string; readText?: string }
+  | { step: 'error'; uri: string | null; message: string; readText?: string };
 
 /** Réduit la photo (1280 px de large, JPEG) : assez pour lire une page, léger à envoyer */
 async function shrink(uri: string): Promise<{ base64: string; uri: string }> {
@@ -42,6 +42,17 @@ const canRead = ocrAvailable || serverReady;
  * si le serveur est branché. La photo n'est ni enregistrée ni envoyée
  * quand la lecture se fait sur place.
  */
+/** Ce que le téléphone a lu sur la page : le parent voit sur quoi Gribouille s'est appuyé */
+function ReadText({ text }: { text: string }) {
+  const shown = text.length > 700 ? `${text.slice(0, 700)}…` : text;
+  return (
+    <Card>
+      <Body muted>Texte lu sur la page</Body>
+      <Body muted style={styles.small}>{shown || '(rien de lisible)'}</Body>
+    </Card>
+  );
+}
+
 export default function PhotoScreen() {
   const { univers } = useUnivers();
   const c = univers.colors;
@@ -64,11 +75,13 @@ export default function PhotoScreen() {
             uri,
             result: { lesson: r.lesson, warning: r.why, dropped: 0, fromBank: r.kind === 'bank' },
             base64: serverReady ? base64 : undefined,
+            readText: text,
           });
           return;
         }
         if (!serverReady) {
-          throw new Error(`${r.why} Recopie le texte dans « Taper les mots ou la poésie », onglet « Texte de la leçon ».`);
+          setState({ step: 'error', uri: null, message: `${r.why} Recopie le texte dans « Taper les mots ou la poésie », onglet « Texte de la leçon ».`, readText: text });
+          return;
         }
       }
       await sendToServer(uri, base64);
@@ -165,6 +178,7 @@ export default function PhotoScreen() {
                 </Body>
                 <Body>{state.message}</Body>
               </Card>
+              {state.readText && <ReadText text={state.readText} />}
               <Button label="Réessayer" onPress={() => setState({ step: 'idle' })} />
             </>
           )}
@@ -225,6 +239,7 @@ export default function PhotoScreen() {
                   </Body>
                 </>
               )}
+              {state.readText && <ReadText text={state.readText} />}
             </>
           )}
         </ScrollView>
